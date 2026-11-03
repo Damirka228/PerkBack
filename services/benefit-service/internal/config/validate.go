@@ -15,5 +15,8 @@ func (c Config) Validate() error {
 	if c.Timeout <= 0 {
 		return fmt.Errorf("timeout <= 0")
 	}
+	if c.ShutdownTimeout <= 0 {
+		return fmt.Errorf("shutdown timeout <= 0")
+	}
 	return nil
 }

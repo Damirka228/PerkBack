@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package benefit.v1;
+
+option go_package = "github.com/Damirka228/PerkBack/gen/go/benefit/v1;benefitv1";
+
+service BenefitService {
+  rpc CalculateBenefit(CalculateBenefitRequest) returns (CalculateBenefitResponse);
+}
+
+message CalculateBenefitRequest {
+  string user_id = 1;
+  string merchant_id = 2;
+  string category_id = 3;
+  int64 purchase_amount_kopecks = 4;
+}
+
+message CalculateBenefitResponse {
+  int64 discount_kopecks = 1;
+  int64 payable_kopecks = 2;
+  int64 cashback_kopecks = 3;
+}
