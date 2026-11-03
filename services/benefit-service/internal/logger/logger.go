@@ -16,6 +16,7 @@ func NewLogger(level string) (*logrus.Logger, error) {
 	logger.SetLevel(lvl)
 	logger.SetFormatter(&logrus.JSONFormatter{
 		TimestampFormat: "2006-01-02 15:04:05",
+		PrettyPrint:     true,
 	})
 	logger.SetOutput(os.Stdout)
 	return logger, nil
