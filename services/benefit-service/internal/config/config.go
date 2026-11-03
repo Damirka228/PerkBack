@@ -20,9 +20,10 @@ type HTTPConfig struct {
 }
 
 type Config struct {
-	App     AppConfig     `yaml:"app"`
-	GRPC    GRPCConfig    `yaml:"grpc"`
-	HTTP    HTTPConfig    `yaml:"http"`
-	Log     LogConfig     `yaml:"log"`
-	Timeout time.Duration `yaml:"timeout"`
+	App             AppConfig     `yaml:"app"`
+	GRPC            GRPCConfig    `yaml:"grpc"`
+	HTTP            HTTPConfig    `yaml:"http"`
+	Log             LogConfig     `yaml:"log"`
+	Timeout         time.Duration `yaml:"timeout"`
+	ShutdownTimeout time.Duration `yaml:"shutdown_timeout"`
 }

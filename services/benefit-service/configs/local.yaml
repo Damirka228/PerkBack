@@ -12,3 +12,4 @@ log:
   level: debug
 
 timeout: 10s
+shutdown_timeout: 10s

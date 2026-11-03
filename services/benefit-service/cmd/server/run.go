@@ -1,9 +1,15 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/config"
+	"github.com/Damirka228/PerkBack/services/benefit-service/internal/handlers/benefit"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/handlers/router"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/logger"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/server"
@@ -34,11 +40,62 @@ func run(configPath string) error {
 
 	log.Info("configuration loaded successfully")
 
+	signalCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	httpRouter := router.NewRouter()
 	httpServer := server.NewHTTPServer(
 		cfg.HTTP.Addr, httpRouter, cfg.Timeout,
 	)
-	log.WithField("addr", cfg.HTTP.Addr).Info("starting HTTP server")
+	log.WithField("http addr:", cfg.HTTP.Addr).Info("starting HTTP server")
 
-	return httpServer.Run()
+	gRPCBenefitHandler := benefit.NewHandler()
+	gRPCServer := server.NewGRPCServer(
+		cfg.GRPC.Addr, gRPCBenefitHandler,
+	)
+	log.WithField("grpc addr:", cfg.GRPC.Addr).Info("starting gRPC server")
+
+	errCh := make(chan error, 2)
+
+	go func() {
+		errCh <- httpServer.Run()
+	}()
+	go func() {
+		errCh <- gRPCServer.Run()
+	}()
+
+	var runErr error
+
+	select {
+	case <-signalCtx.Done():
+	case runErr = <-errCh:
+	}
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+	defer cancel()
+
+	grpcDone := make(chan struct{})
+
+	go func() {
+		gRPCServer.GracefulStop()
+		close(grpcDone)
+	}()
+
+	httpErr := httpServer.Shutdown(shutdownCtx)
+
+	var closeErr error
+	if httpErr != nil {
+		closeErr = httpServer.Close()
+	}
+
+	var timeoutErr error
+	select {
+	case <-grpcDone:
+	case <-shutdownCtx.Done():
+		gRPCServer.Stop()
+		timeoutErr = shutdownCtx.Err()
+	}
+
+	return errors.Join(runErr, httpErr, closeErr, timeoutErr)
+
 }

@@ -1,6 +1,8 @@
 package server
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -22,8 +24,26 @@ func NewHTTPServer(addr string, handlers http.Handler, timeout time.Duration) *H
 }
 
 func (s *HTTPServer) Run() error {
-	if err := s.server.ListenAndServe(); err != nil {
+
+	err := s.server.ListenAndServe()
+	if errors.Is(err, http.ErrServerClosed) {
+		return nil
+	} else {
 		return fmt.Errorf("err start server: %w", err)
+	}
+}
+
+func (s *HTTPServer) Shutdown(ctx context.Context) error {
+	err := s.server.Shutdown(ctx)
+	if err != nil {
+		return fmt.Errorf("error to graceful shutdown http server: %w", err)
+	}
+	return nil
+}
+
+func (s *HTTPServer) Close() error {
+	if err := s.server.Close(); err != nil {
+		return fmt.Errorf("error to close http server: %w", err)
 	}
 	return nil
 }
