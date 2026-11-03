@@ -13,5 +13,9 @@ jobs:
   runner-check:
     runs-on: [self-hosted, macOS, ARM64]
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
       - name: Check Go
         run: go version
+      - name: Vet
+        run: go vet ./...
