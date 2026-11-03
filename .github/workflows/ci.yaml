@@ -4,13 +4,15 @@ on:
   push:
     branches:
       - main
-      - feature/**
-
+  pull_request:
+    branches:
+      - main   
 permissions:
   contents: read
 
 jobs:
   runner-check:
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: [self-hosted, macOS, ARM64]
     steps:
       - name: Checkout repository
@@ -18,7 +20,7 @@ jobs:
       - name: Check Go
         run: go version
       - name: Check formatting
-        run: | 
+        run: |
           files=$(gofmt -l .)
           if [ -n "$files" ]; then
             printf '%s\n' "$files"
