@@ -1,0 +1,17 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - feature/**
+
+permissions:
+  contents: read
+
+jobs:
+  runner-check:
+    runs-on: [self-hosted, macOS, ARM64]
+    steps:
+      - name: Check Go
+        run: go version
