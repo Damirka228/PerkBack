@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/config"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/handlers/benefit"
@@ -47,13 +48,19 @@ func run(configPath string) error {
 	httpServer := server.NewHTTPServer(
 		cfg.HTTP.Addr, httpRouter, cfg.Timeout,
 	)
-	log.WithField("http addr:", cfg.HTTP.Addr).Info("starting HTTP server")
+	log.WithFields(logrus.Fields{
+		"server": "http",
+		"addr":   cfg.HTTP.Addr,
+	}).Info("starting HTTP server")
 
 	gRPCBenefitHandler := benefit.NewHandler()
 	gRPCServer := server.NewGRPCServer(
 		cfg.GRPC.Addr, gRPCBenefitHandler,
 	)
-	log.WithField("grpc addr:", cfg.GRPC.Addr).Info("starting gRPC server")
+	log.WithFields(logrus.Fields{
+		"server": "grpc",
+		"addr":   cfg.GRPC.Addr,
+	}).Info("starting gRPC server")
 
 	errCh := make(chan error, 2)
 
@@ -68,8 +75,13 @@ func run(configPath string) error {
 
 	select {
 	case <-signalCtx.Done():
+		log.WithField("reason", "signal").Info("shutdown requested")
 	case runErr = <-errCh:
+		log.WithField("reason", "server_exit").Warn("shutdown requested")
 	}
+
+	shutdownStarted := time.Now()
+	log.WithField("timeout", cfg.ShutdownTimeout.String()).Info("starting graceful shutdown")
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 	defer cancel()
@@ -85,15 +97,30 @@ func run(configPath string) error {
 
 	var closeErr error
 	if httpErr != nil {
+		log.WithField("server", "http").Warn("graceful shutdown failed; forcing connection close")
 		closeErr = httpServer.Close()
+		if closeErr == nil {
+			log.WithField("server", "http").Info("server connections closed")
+		}
+	} else {
+		log.WithField("server", "http").Info("server stopped gracefully")
 	}
 
 	var timeoutErr error
 	select {
 	case <-grpcDone:
+		log.WithField("server", "grpc").Info("server stopped gracefully")
 	case <-shutdownCtx.Done():
+		log.WithField("server", "grpc").Warn("shutdown deadline reached; forcing stop")
 		gRPCServer.Stop()
 		timeoutErr = shutdownCtx.Err()
+	}
+
+	shutdownLog := log.WithField("duration", time.Since(shutdownStarted).String())
+	if httpErr != nil || closeErr != nil || timeoutErr != nil {
+		shutdownLog.Warn("shutdown finished with errors")
+	} else {
+		shutdownLog.Info("graceful shutdown completed")
 	}
 
 	return errors.Join(runErr, httpErr, closeErr, timeoutErr)
