@@ -14,10 +14,19 @@ import (
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/handlers/router"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/logger"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/server"
+	"github.com/Damirka228/PerkBack/services/benefit-service/internal/usecase"
 	"github.com/sirupsen/logrus"
 )
 
-func run(configPath string) error {
+type RateProvider struct {
+	rateBPS int64
+}
+
+func (p *RateProvider) GetRateBPS(ctx context.Context, input usecase.CalculateInput) (int64, error) {
+	return p.rateBPS, nil
+}
+
+func run(ctx context.Context, configPath string) error {
 	cfg, err := config.Load(configPath)
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
@@ -53,7 +62,9 @@ func run(configPath string) error {
 		"addr":   cfg.HTTP.Addr,
 	}).Info("starting HTTP server")
 
-	gRPCBenefitHandler := benefit.NewHandler()
+	provider := &RateProvider{rateBPS: 100}
+	service := usecase.NewService(provider)
+	gRPCBenefitHandler := benefit.NewHandler(service)
 	gRPCServer := server.NewGRPCServer(
 		cfg.GRPC.Addr, gRPCBenefitHandler,
 	)
