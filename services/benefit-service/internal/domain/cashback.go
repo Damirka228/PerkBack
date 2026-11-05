@@ -1,4 +1,4 @@
-package benefit
+package domain
 
 func CalculateCashback(payableKop int64, rateBPS int64) (int64, error) {
 	if payableKop < 0 {

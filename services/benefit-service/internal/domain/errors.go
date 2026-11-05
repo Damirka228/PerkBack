@@ -1,4 +1,4 @@
-package benefit
+package domain
 
 import "errors"
 
