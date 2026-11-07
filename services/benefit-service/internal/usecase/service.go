@@ -25,18 +25,19 @@ func (s *Service) Calculate(ctx context.Context, input CalculateInput) (Calculat
 	if input.PurchaseAmountKop < 0 {
 		return CalculateResult{}, domain.ErrInvalidAmount
 	}
-	RateBPS, err := s.rateProvider.GetRateBPS(ctx, input)
+	rateBPS, err := s.rateProvider.GetRateBPS(ctx, input)
 	if err != nil {
 		return CalculateResult{}, fmt.Errorf("err get rate BPS: %w", err)
 	}
 
-	cashback, err := domain.CalculateCashback(input.PurchaseAmountKop, RateBPS)
+	resultCash, err := domain.CalculateOptions(input.PurchaseAmountKop, 0, rateBPS)
 	if err != nil {
-		return CalculateResult{}, fmt.Errorf("err calculate cashback: %w", err)
+		return CalculateResult{}, fmt.Errorf("err get options result: %w", err)
 	}
+
 	return CalculateResult{
-		DiscountKop: 0,
-		PayableKop:  input.PurchaseAmountKop,
-		CashbackKop: cashback,
+		DiscountKop: resultCash.DiscountKop,
+		PayableKop:  resultCash.PayableKop,
+		CashbackKop: resultCash.CashbackKop,
 	}, nil
 }
