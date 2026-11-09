@@ -12,7 +12,7 @@ import (
 )
 
 type Calculator interface {
-	Calculate(ctx context.Context, input usecase.CalculateInput) (usecase.CalculateResult, error)
+	Calculate(ctx context.Context, input usecase.CalculateInput) (domain.OptionResult, error)
 }
 
 type Handler struct {
