@@ -24,7 +24,7 @@ const (
 type CalculateBenefitRequest struct {
 	state                 protoimpl.MessageState `protogen:"open.v1"`
 	UserId                string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	MerchantId            string                 `protobuf:"bytes,2,opt,name=merchant_id,json=merchantId,proto3" json:"merchant_id,omitempty"`
+	ShopId                string                 `protobuf:"bytes,2,opt,name=shop_id,json=shopId,proto3" json:"shop_id,omitempty"`
 	CategoryId            string                 `protobuf:"bytes,3,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
 	PurchaseAmountKopecks int64                  `protobuf:"varint,4,opt,name=purchase_amount_kopecks,json=purchaseAmountKopecks,proto3" json:"purchase_amount_kopecks,omitempty"`
 	unknownFields         protoimpl.UnknownFields
@@ -68,9 +68,9 @@ func (x *CalculateBenefitRequest) GetUserId() string {
 	return ""
 }
 
-func (x *CalculateBenefitRequest) GetMerchantId() string {
+func (x *CalculateBenefitRequest) GetShopId() string {
 	if x != nil {
-		return x.MerchantId
+		return x.ShopId
 	}
 	return ""
 }
@@ -154,11 +154,10 @@ var File_benefit_v1_benefit_proto protoreflect.FileDescriptor
 const file_benefit_v1_benefit_proto_rawDesc = "" +
 	"\n" +
 	"\x18benefit/v1/benefit.proto\x12\n" +
-	"benefit.v1\"\xac\x01\n" +
+	"benefit.v1\"\xa4\x01\n" +
 	"\x17CalculateBenefitRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1f\n" +
-	"\vmerchant_id\x18\x02 \x01(\tR\n" +
-	"merchantId\x12\x1f\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x17\n" +
+	"\ashop_id\x18\x02 \x01(\tR\x06shopId\x12\x1f\n" +
 	"\vcategory_id\x18\x03 \x01(\tR\n" +
 	"categoryId\x126\n" +
 	"\x17purchase_amount_kopecks\x18\x04 \x01(\x03R\x15purchaseAmountKopecks\"\x99\x01\n" +

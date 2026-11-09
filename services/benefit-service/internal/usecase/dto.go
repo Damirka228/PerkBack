@@ -2,7 +2,7 @@ package usecase
 
 type CalculateInput struct {
 	UserID            string
-	MerchantID        string
+	ShopID            string
 	CategoryID        string
 	PurchaseAmountKop int64
 }

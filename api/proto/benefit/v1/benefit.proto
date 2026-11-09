@@ -10,7 +10,7 @@ service BenefitService {
 
 message CalculateBenefitRequest {
   string user_id = 1;
-  string merchant_id = 2;
+  string shop_id = 2;
   string category_id = 3;
   int64 purchase_amount_kopecks = 4;
 }
