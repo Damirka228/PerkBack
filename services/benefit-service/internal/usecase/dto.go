@@ -7,8 +7,7 @@ type CalculateInput struct {
 	PurchaseAmountKop int64
 }
 
-type CalculateResult struct {
+type BestVariant struct {
 	DiscountKop int64
-	PayableKop  int64
-	CashbackKop int64
+	RateBPS     int64
 }

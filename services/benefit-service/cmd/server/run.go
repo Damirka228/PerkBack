@@ -18,12 +18,18 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type RateProvider struct {
+type OptionsProvider struct {
 	rateBPS int64
 }
 
-func (p *RateProvider) GetRateBPS(ctx context.Context, input usecase.CalculateInput) (int64, error) {
-	return p.rateBPS, nil
+func (p *OptionsProvider) GetRateBPS(ctx context.Context, input usecase.CalculateInput) ([]usecase.BestVariant, error) {
+	hardVar := usecase.BestVariant{
+		DiscountKop: 0,
+		RateBPS:     p.rateBPS,
+	}
+	var bestVatiant []usecase.BestVariant
+	bestVatiant = append(bestVatiant, hardVar)
+	return bestVatiant, nil
 }
 
 func run(ctx context.Context, configPath string) error {
@@ -62,7 +68,7 @@ func run(ctx context.Context, configPath string) error {
 		"addr":   cfg.HTTP.Addr,
 	}).Info("starting HTTP server")
 
-	provider := &RateProvider{rateBPS: 100}
+	provider := &OptionsProvider{rateBPS: 100}
 	service := usecase.NewService(provider)
 	gRPCBenefitHandler := benefit.NewHandler(service)
 	gRPCServer := server.NewGRPCServer(

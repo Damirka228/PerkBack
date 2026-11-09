@@ -7,37 +7,53 @@ import (
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/domain"
 )
 
-type RateProvider interface {
-	GetRateBPS(ctx context.Context, input CalculateInput) (int64, error)
+type OptionsProvider interface {
+	GetRateBPS(ctx context.Context, input CalculateInput) ([]BestVariant, error)
 }
 
 type Service struct {
-	rateProvider RateProvider
+	optionsProvider OptionsProvider
 }
 
-func NewService(rateProvider RateProvider) *Service {
+func NewService(optionsProvider OptionsProvider) *Service {
 	return &Service{
-		rateProvider: rateProvider,
+		optionsProvider: optionsProvider,
 	}
 }
 
-func (s *Service) Calculate(ctx context.Context, input CalculateInput) (CalculateResult, error) {
+func (s *Service) Calculate(ctx context.Context, input CalculateInput) (domain.OptionResult, error) {
 	if input.PurchaseAmountKop < 0 {
-		return CalculateResult{}, domain.ErrInvalidAmount
+		return domain.OptionResult{}, domain.ErrInvalidAmount
 	}
-	rateBPS, err := s.rateProvider.GetRateBPS(ctx, input)
+	variants, err := s.optionsProvider.GetRateBPS(ctx, input)
 	if err != nil {
-		return CalculateResult{}, fmt.Errorf("err get rate BPS: %w", err)
+		return domain.OptionResult{}, fmt.Errorf("error get list variant:%w", err)
 	}
 
-	resultCash, err := domain.CalculateOptions(input.PurchaseAmountKop, 0, rateBPS)
-	if err != nil {
-		return CalculateResult{}, fmt.Errorf("err get options result: %w", err)
+	if len(variants) == 0 {
+		return domain.OptionResult{}, fmt.Errorf("variants list is empty")
 	}
 
-	return CalculateResult{
-		DiscountKop: resultCash.DiscountKop,
-		PayableKop:  resultCash.PayableKop,
-		CashbackKop: resultCash.CashbackKop,
-	}, nil
+	var maxBenefit int64
+	var bestResult *domain.OptionResult
+	var isFirst bool = true
+
+	for _, variant := range variants {
+		res, err := domain.CalculateOptions(input.PurchaseAmountKop, variant.DiscountKop, variant.RateBPS)
+		if err != nil {
+			return domain.OptionResult{}, fmt.Errorf("err get variant for best variants: %w", err)
+		}
+		currBenefit := res.DiscountKop + res.CashbackKop
+		if isFirst {
+			maxBenefit = currBenefit
+			bestResult = &res
+			isFirst = false
+			continue
+		}
+		if currBenefit > maxBenefit {
+			maxBenefit = currBenefit
+			bestResult = &res
+		}
+	}
+	return *bestResult, nil
 }
