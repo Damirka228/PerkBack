@@ -29,7 +29,7 @@ func NewHandler(calculator Calculator) *Handler {
 func (h *Handler) CalculateBenefit(ctx context.Context, req *benefitv1.CalculateBenefitRequest) (*benefitv1.CalculateBenefitResponse, error) {
 	input := usecase.CalculateInput{
 		UserID:            req.GetUserId(),
-		MerchantID:        req.GetMerchantId(),
+		ShopID:            req.GetShopId(),
 		CategoryID:        req.GetCategoryId(),
 		PurchaseAmountKop: req.GetPurchaseAmountKopecks(),
 	}

@@ -18,7 +18,7 @@ type optionsProviderTest struct {
 	input    usecase.CalculateInput
 }
 
-func (p *optionsProviderTest) GetRateBPS(ctx context.Context, input usecase.CalculateInput) ([]usecase.BestVariant, error) {
+func (p *optionsProviderTest) GetOptions(ctx context.Context, input usecase.CalculateInput) ([]usecase.BestVariant, error) {
 	p.calls++
 	p.ctx = ctx
 	p.input = input
@@ -133,7 +133,7 @@ func TestCalculateSuccess(t *testing.T) {
 			ctx := t.Context()
 			input := usecase.CalculateInput{
 				UserID:            "user-1",
-				MerchantID:        "shop-42",
+				ShopID:            "shop-42",
 				CategoryID:        "groceries",
 				PurchaseAmountKop: tc.amount,
 			}
@@ -144,13 +144,13 @@ func TestCalculateSuccess(t *testing.T) {
 			}
 			assert.Equal(t, result, tc.want)
 			if provider.calls != 1 {
-				t.Fatalf("GetRateBPS calls = %d, want 1", provider.calls)
+				t.Fatalf("GetOptions calls = %d, want 1", provider.calls)
 			}
 			if provider.ctx != ctx {
-				t.Error("GetRateBPS did not receive the original context")
+				t.Error("GetOptions did not receive the original context")
 			}
 			if provider.input != input {
-				t.Errorf("GetRateBPS input = %+v, want %+v", provider.input, input)
+				t.Errorf("GetOptions input = %+v, want %+v", provider.input, input)
 			}
 		})
 	}
@@ -242,7 +242,7 @@ func TestCalculateErrors(t *testing.T) {
 				t.Errorf("Calculate result = %+v, want an empty result", result)
 			}
 			if provider.calls != tc.wantCalls {
-				t.Errorf("GetRateBPS calls = %d, want %d", provider.calls, tc.wantCalls)
+				t.Errorf("GetOptions calls = %d, want %d", provider.calls, tc.wantCalls)
 			}
 		})
 	}
@@ -273,7 +273,7 @@ func TestCalculateEmptyOptions(t *testing.T) {
 				t.Errorf("Calculate result = %+v, want an empty result", result)
 			}
 			if provider.calls != 1 {
-				t.Errorf("GetRateBPS calls = %d, want 1", provider.calls)
+				t.Errorf("GetOptions calls = %d, want 1", provider.calls)
 			}
 		})
 	}

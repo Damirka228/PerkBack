@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/config"
+	"github.com/Damirka228/PerkBack/services/benefit-service/internal/domain"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/handlers/benefit"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/handlers/router"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/logger"
@@ -20,15 +21,22 @@ import (
 
 type OptionsProvider struct {
 	rateBPS int64
+	rules   []domain.RulePromotion
 }
 
-func (p *OptionsProvider) GetRateBPS(ctx context.Context, input usecase.CalculateInput) ([]usecase.BestVariant, error) {
-	hardVar := usecase.BestVariant{
-		DiscountKop: 0,
-		RateBPS:     p.rateBPS,
+func (p *OptionsProvider) GetOptions(ctx context.Context, input usecase.CalculateInput) ([]usecase.BestVariant, error) {
+	bestVatiant := []usecase.BestVariant{
+		{DiscountKop: 0, RateBPS: p.rateBPS},
 	}
-	var bestVatiant []usecase.BestVariant
-	bestVatiant = append(bestVatiant, hardVar)
+	for _, rule := range p.rules {
+		matches := rule.MatchesRule(input.ShopID, input.CategoryID, input.PurchaseAmountKop)
+		if matches == true {
+			bestVatiant = append(bestVatiant, usecase.BestVariant{
+				DiscountKop: rule.DiscountKop,
+				RateBPS:     rule.RateBPS,
+			})
+		}
+	}
 	return bestVatiant, nil
 }
 
@@ -68,7 +76,17 @@ func run(ctx context.Context, configPath string) error {
 		"addr":   cfg.HTTP.Addr,
 	}).Info("starting HTTP server")
 
-	provider := &OptionsProvider{rateBPS: 100}
+	testHardRules := []domain.RulePromotion{
+		{
+			ShopID:               "shop-42",
+			CategoryID:           "food",
+			MinPurchaseAmountKop: 100_000,
+			DiscountKop:          7_000,
+			RateBPS:              300,
+		},
+	}
+
+	provider := &OptionsProvider{rateBPS: 100, rules: testHardRules}
 	service := usecase.NewService(provider)
 	gRPCBenefitHandler := benefit.NewHandler(service)
 	gRPCServer := server.NewGRPCServer(

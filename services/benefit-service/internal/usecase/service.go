@@ -8,7 +8,7 @@ import (
 )
 
 type OptionsProvider interface {
-	GetRateBPS(ctx context.Context, input CalculateInput) ([]BestVariant, error)
+	GetOptions(ctx context.Context, input CalculateInput) ([]BestVariant, error)
 }
 
 type Service struct {
@@ -25,7 +25,7 @@ func (s *Service) Calculate(ctx context.Context, input CalculateInput) (domain.O
 	if input.PurchaseAmountKop < 0 {
 		return domain.OptionResult{}, domain.ErrInvalidAmount
 	}
-	variants, err := s.optionsProvider.GetRateBPS(ctx, input)
+	variants, err := s.optionsProvider.GetOptions(ctx, input)
 	if err != nil {
 		return domain.OptionResult{}, fmt.Errorf("error get list variant:%w", err)
 	}
