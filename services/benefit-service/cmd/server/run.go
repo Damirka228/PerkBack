@@ -57,12 +57,19 @@ func run(ctx context.Context, configPath string) error {
 		return fmt.Errorf("error start logger: %w", err)
 	}
 
+	_, httpAddrFromEnv := os.LookupEnv("BENEFIT_HTTP_ADDR")
 	log.WithFields(logrus.Fields{
-		"http_addr": cfg.HTTP.Addr,
-		"grpc_addr": cfg.GRPC.Addr,
+		"http_addr":          cfg.HTTP.Addr,
+		"grpc_addr":          cfg.GRPC.Addr,
+		"http_addr_from_env": httpAddrFromEnv,
 	}).Debug("server addresses loaded")
 
-	log.Info("configuration loaded successfully")
+	log.WithFields(logrus.Fields{
+		"config_path": configPath,
+		"app":         cfg.App.Name,
+		"env":         cfg.App.Env,
+		"log_level":   cfg.Log.Level,
+	}).Info("configuration loaded successfully")
 
 	signalCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -90,7 +97,9 @@ func run(ctx context.Context, configPath string) error {
 	service := usecase.NewService(provider)
 	gRPCBenefitHandler := benefit.NewHandler(service)
 	gRPCServer := server.NewGRPCServer(
-		cfg.GRPC.Addr, gRPCBenefitHandler,
+		cfg.GRPC.Addr,
+		gRPCBenefitHandler,
+		log,
 	)
 	log.WithFields(logrus.Fields{
 		"server": "grpc",

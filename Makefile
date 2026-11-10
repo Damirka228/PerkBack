@@ -2,6 +2,7 @@
 
 GO ?= go
 PROTOC ?= protoc
+CONFIG ?= services/benefit-service/configs/local.yaml
 
 .PHONY: help run build fmt fmt-check vet test check proto
 
@@ -17,7 +18,7 @@ help:
 		'make proto      - Generate Go code from benefit.proto'
 
 run:
-	$(GO) run ./services/benefit-service/cmd/server
+	$(GO) run ./services/benefit-service/cmd/server -config "$(CONFIG)"
 
 build:
 	$(GO) build ./...

@@ -5,6 +5,8 @@ import (
 	"net"
 
 	benefitv1 "github.com/Damirka228/PerkBack/gen/go/benefit/v1"
+	"github.com/Damirka228/PerkBack/services/benefit-service/internal/handlers/middleware"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
@@ -13,8 +15,13 @@ type GRPCServer struct {
 	server *grpc.Server
 }
 
-func NewGRPCServer(addr string, handler benefitv1.BenefitServiceServer) *GRPCServer {
-	server := grpc.NewServer()
+func NewGRPCServer(addr string, handler benefitv1.BenefitServiceServer, log *logrus.Logger) *GRPCServer {
+	server := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			middleware.Logging(log),
+			middleware.Recovery(log),
+		),
+	)
 	benefitv1.RegisterBenefitServiceServer(server, handler)
 	return &GRPCServer{
 		addr:   addr,
