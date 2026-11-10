@@ -48,8 +48,9 @@ func (h *Handler) CalculateBenefit(ctx context.Context, req *benefitv1.Calculate
 		return nil, status.Error(codes.Internal, "failed to calculate benefit")
 	}
 	return &benefitv1.CalculateBenefitResponse{
-		DiscountKopecks: result.DiscountKop,
-		PayableKopecks:  result.PayableKop,
-		CashbackKopecks: result.CashbackKop,
+		PurchaseAmountKopecks: input.PurchaseAmountKop,
+		DiscountKopecks:       result.DiscountKop,
+		PayableKopecks:        result.PayableKop,
+		CashbackKopecks:       result.CashbackKop,
 	}, nil
 }

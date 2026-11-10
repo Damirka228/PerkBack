@@ -90,12 +90,13 @@ func (x *CalculateBenefitRequest) GetPurchaseAmountKopecks() int64 {
 }
 
 type CalculateBenefitResponse struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	DiscountKopecks int64                  `protobuf:"varint,1,opt,name=discount_kopecks,json=discountKopecks,proto3" json:"discount_kopecks,omitempty"`
-	PayableKopecks  int64                  `protobuf:"varint,2,opt,name=payable_kopecks,json=payableKopecks,proto3" json:"payable_kopecks,omitempty"`
-	CashbackKopecks int64                  `protobuf:"varint,3,opt,name=cashback_kopecks,json=cashbackKopecks,proto3" json:"cashback_kopecks,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state                 protoimpl.MessageState `protogen:"open.v1"`
+	DiscountKopecks       int64                  `protobuf:"varint,1,opt,name=discount_kopecks,json=discountKopecks,proto3" json:"discount_kopecks,omitempty"`
+	PayableKopecks        int64                  `protobuf:"varint,2,opt,name=payable_kopecks,json=payableKopecks,proto3" json:"payable_kopecks,omitempty"`
+	CashbackKopecks       int64                  `protobuf:"varint,3,opt,name=cashback_kopecks,json=cashbackKopecks,proto3" json:"cashback_kopecks,omitempty"`
+	PurchaseAmountKopecks int64                  `protobuf:"varint,4,opt,name=purchase_amount_kopecks,json=purchaseAmountKopecks,proto3" json:"purchase_amount_kopecks,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *CalculateBenefitResponse) Reset() {
@@ -149,6 +150,13 @@ func (x *CalculateBenefitResponse) GetCashbackKopecks() int64 {
 	return 0
 }
 
+func (x *CalculateBenefitResponse) GetPurchaseAmountKopecks() int64 {
+	if x != nil {
+		return x.PurchaseAmountKopecks
+	}
+	return 0
+}
+
 var File_benefit_v1_benefit_proto protoreflect.FileDescriptor
 
 const file_benefit_v1_benefit_proto_rawDesc = "" +
@@ -160,11 +168,12 @@ const file_benefit_v1_benefit_proto_rawDesc = "" +
 	"\ashop_id\x18\x02 \x01(\tR\x06shopId\x12\x1f\n" +
 	"\vcategory_id\x18\x03 \x01(\tR\n" +
 	"categoryId\x126\n" +
-	"\x17purchase_amount_kopecks\x18\x04 \x01(\x03R\x15purchaseAmountKopecks\"\x99\x01\n" +
+	"\x17purchase_amount_kopecks\x18\x04 \x01(\x03R\x15purchaseAmountKopecks\"\xd1\x01\n" +
 	"\x18CalculateBenefitResponse\x12)\n" +
 	"\x10discount_kopecks\x18\x01 \x01(\x03R\x0fdiscountKopecks\x12'\n" +
 	"\x0fpayable_kopecks\x18\x02 \x01(\x03R\x0epayableKopecks\x12)\n" +
-	"\x10cashback_kopecks\x18\x03 \x01(\x03R\x0fcashbackKopecks2o\n" +
+	"\x10cashback_kopecks\x18\x03 \x01(\x03R\x0fcashbackKopecks\x126\n" +
+	"\x17purchase_amount_kopecks\x18\x04 \x01(\x03R\x15purchaseAmountKopecks2o\n" +
 	"\x0eBenefitService\x12]\n" +
 	"\x10CalculateBenefit\x12#.benefit.v1.CalculateBenefitRequest\x1a$.benefit.v1.CalculateBenefitResponseB<Z:github.com/Damirka228/PerkBack/gen/go/benefit/v1;benefitv1b\x06proto3"
 
