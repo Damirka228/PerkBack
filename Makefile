@@ -56,4 +56,5 @@ migrate-up:
 migrate-down:
 	@. ./.env && \
 		migrate -path services/rules-service/migrations \
-			-database "$$RULES_DATABASE_URL" down
+			-database "$$RULES_DATABASE_URL" down 1
+.PHONY: migrate-up migrate-down
