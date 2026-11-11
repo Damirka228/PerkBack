@@ -47,3 +47,13 @@ proto:
 		--go_out=gen/go --go_opt=paths=source_relative \
 		--go-grpc_out=gen/go --go-grpc_opt=paths=source_relative \
 		benefit/v1/benefit.proto
+
+migrate-up:
+	@. ./.env && \
+		migrate -path services/rules-service/migrations \
+			-database "$$RULES_DATABASE_URL" up
+
+migrate-down:
+	@. ./.env && \
+		migrate -path services/rules-service/migrations \
+			-database "$$RULES_DATABASE_URL" down

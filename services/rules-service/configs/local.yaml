@@ -1,0 +1,14 @@
+app:
+  name: rules-service
+  env: local
+grpc:
+  address: ":9091"
+http:
+  address: ":8081"
+database:
+  connect_timeout: 5s
+log:
+  level: debug
+
+timeout: 10s
+shutdown_timeout: 10s
