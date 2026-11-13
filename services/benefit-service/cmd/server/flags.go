@@ -1,30 +1,18 @@
 package main
 
 import (
-	"errors"
 	"flag"
-	"io"
 	"os"
 )
 
-var errConfigPathRequired = errors.New("config path is required, use -config")
+func fetchConfigPath() string {
+	var configPath string
+	flag.StringVar(&configPath, "config", "", "path to the YAML configuration file")
+	flag.Parse()
 
-func parseConfigPath(args []string) (string, error) {
-	flags := flag.NewFlagSet("benefit-service", flag.ContinueOnError)
-	flags.SetOutput(io.Discard)
-	configPath := flags.String("config", "", "path to the YAML configuration file")
-
-	if err := flags.Parse(args); err != nil {
-		if errors.Is(err, flag.ErrHelp) {
-			flags.SetOutput(os.Stdout)
-			flags.Usage()
-		}
-		return "", err
+	if configPath == "" {
+		return os.Getenv("CONFIG_PATH")
 	}
 
-	if *configPath == "" {
-		return "", errConfigPathRequired
-	}
-
-	return *configPath, nil
+	return configPath
 }

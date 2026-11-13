@@ -39,8 +39,6 @@ func NewStorage(ctx context.Context, cfg config.DB) (*Storage, error) {
 
 func (s *Storage) Close() {
 	if s.pool != nil {
-		//fmt.Println("closing db pool....") TODO: заменить на логи
 		s.pool.Close()
 	}
-	// fmt.Println("pool is closed") TODO: заменить на логи
 }
