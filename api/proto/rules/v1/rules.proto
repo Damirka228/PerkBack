@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package rules.v1;
+
+option go_package = "github.com/Damirka228/PerkBack/gen/go/rules/v1;rulesv1";
+
+service RulesService{
+    rpc GetAllPromotions(GetAllPromotionsRequest) returns (GetAllPromotionsResponse);
+}
+
+message GetAllPromotionsRequest{}
+
+message Promotion {
+    string id = 1;
+    string shop_id = 2;
+    string category_id = 3;
+    int64 min_purchase_amount_kopecks = 4;
+    int64 discount_kopecks = 5;
+    int64 rate_bps = 6;
+}
+
+message GetAllPromotionsResponse{
+    repeated Promotion promotions = 1;
+}

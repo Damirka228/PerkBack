@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/config"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/domain"
@@ -17,6 +16,7 @@ import (
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/server"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/usecase"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 )
 
 type OptionsProvider struct {
@@ -71,7 +71,7 @@ func run(ctx context.Context, configPath string) error {
 		"log_level":   cfg.Log.Level,
 	}).Info("configuration loaded successfully")
 
-	signalCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	signalCtx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	httpRouter := router.NewRouter()
@@ -107,66 +107,43 @@ func run(ctx context.Context, configPath string) error {
 	}).Info("starting gRPC server")
 
 	errCh := make(chan error, 2)
-
-	go func() {
-		errCh <- httpServer.Run()
-	}()
-	go func() {
-		errCh <- gRPCServer.Run()
-	}()
+	go func() { errCh <- httpServer.Run() }()
+	go func() { errCh <- gRPCServer.Run() }()
 
 	var runErr error
-
+	received := 0
 	select {
 	case <-signalCtx.Done():
-		log.WithField("reason", "signal").Info("shutdown requested")
+		log.WithField("reason", "signal_or_context").Info("shutdown requested")
 	case runErr = <-errCh:
+		received++
 		log.WithField("reason", "server_exit").Warn("shutdown requested")
 	}
+	stop()
 
-	shutdownStarted := time.Now()
-	log.WithField("timeout", cfg.ShutdownTimeout.String()).Info("starting graceful shutdown")
+	shutdownErr := server.Shutdown(httpServer, gRPCServer, cfg.ShutdownTimeout, log)
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
-	defer cancel()
-
-	grpcDone := make(chan struct{})
-
-	go func() {
-		gRPCServer.GracefulStop()
-		close(grpcDone)
-	}()
-
-	httpErr := httpServer.Shutdown(shutdownCtx)
-
-	var closeErr error
-	if httpErr != nil {
-		log.WithField("server", "http").Warn("graceful shutdown failed; forcing connection close")
-		closeErr = httpServer.Close()
-		if closeErr == nil {
-			log.WithField("server", "http").Info("server connections closed")
+	if errors.Is(runErr, grpc.ErrServerStopped) {
+		runErr = nil
+	}
+	for received < 2 {
+		err := <-errCh
+		received++
+		if err == nil || errors.Is(err, grpc.ErrServerStopped) {
+			continue
 		}
-	} else {
-		log.WithField("server", "http").Info("server stopped gracefully")
+		if runErr == nil {
+			runErr = err
+		} else {
+			log.WithError(err).Error("additional server error")
+		}
 	}
 
-	var timeoutErr error
-	select {
-	case <-grpcDone:
-		log.WithField("server", "grpc").Info("server stopped gracefully")
-	case <-shutdownCtx.Done():
-		log.WithField("server", "grpc").Warn("shutdown deadline reached; forcing stop")
-		gRPCServer.Stop()
-		timeoutErr = shutdownCtx.Err()
+	if runErr != nil {
+		if shutdownErr != nil {
+			log.WithError(shutdownErr).Error("additional shutdown error")
+		}
+		return runErr
 	}
-
-	shutdownLog := log.WithField("duration", time.Since(shutdownStarted).String())
-	if httpErr != nil || closeErr != nil || timeoutErr != nil {
-		shutdownLog.Warn("shutdown finished with errors")
-	} else {
-		shutdownLog.Info("graceful shutdown completed")
-	}
-
-	return errors.Join(runErr, httpErr, closeErr, timeoutErr)
-
+	return shutdownErr
 }

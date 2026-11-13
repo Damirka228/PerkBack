@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
-	"flag"
 	"os"
 
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/logger"
@@ -16,22 +14,13 @@ func main() {
 		logrus.WithError(err).Fatal("initialize startup logger")
 	}
 
-	configPath, err := parseConfigPath(os.Args[1:])
-	if errors.Is(err, flag.ErrHelp) {
-		return
+	configPath := fetchConfigPath()
+	if configPath == "" {
+		log.Error("config path is required, use -config or CONFIG_PATH")
+		os.Exit(1)
 	}
-	if err != nil {
-		log.WithError(err).Error("invalid command-line arguments")
-		if errors.Is(err, errConfigPathRequired) {
-			os.Exit(1)
-		}
-		os.Exit(2)
-	}
-
-	startupLog := log.WithField("config_path", configPath)
-	startupLog.Info("loading configuration")
 
 	if err := run(context.Background(), configPath); err != nil {
-		startupLog.WithError(err).Fatal("application failed")
+		log.WithError(err).Fatal("benefit-service startup failed")
 	}
 }

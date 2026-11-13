@@ -15,7 +15,7 @@ help:
 		'make vet        - Run go vet' \
 		'make test       - Run Go tests' \
 		'make check      - Run formatting, vet, tests and build checks' \
-		'make proto      - Generate Go code from benefit.proto'
+		'make proto      - Generate Go code from benefit.proto and rules.proto'
 
 run:
 	$(GO) run ./services/benefit-service/cmd/server -config "$(CONFIG)"
@@ -46,7 +46,8 @@ proto:
 	$(PROTOC) -I api/proto \
 		--go_out=gen/go --go_opt=paths=source_relative \
 		--go-grpc_out=gen/go --go-grpc_opt=paths=source_relative \
-		benefit/v1/benefit.proto
+		benefit/v1/benefit.proto \
+		rules/v1/rules.proto
 
 migrate-up:
 	@. ./.env && \
