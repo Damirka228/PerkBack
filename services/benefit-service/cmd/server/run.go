@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/Damirka228/PerkBack/services/benefit-service/internal/client/rules"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/config"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/domain"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/handlers/benefit"
@@ -83,17 +84,22 @@ func run(ctx context.Context, configPath string) error {
 		"addr":   cfg.HTTP.Addr,
 	}).Info("starting HTTP server")
 
-	testHardRules := []domain.RulePromotion{
-		{
-			ShopID:               "shop-42",
-			CategoryID:           "food",
-			MinPurchaseAmountKop: 100_000,
-			DiscountKop:          7_000,
-			RateBPS:              300,
-		},
+	client, err := rules.NewClient(cfg.RulesService)
+	if err != nil {
+		return fmt.Errorf("err create rules clinet: %w", err)
 	}
+	defer func() {
+		if err := client.Close(); err != nil {
+			log.WithError(err).Error("close rules client")
+		}
+	}()
+	rulesPromotions, err := client.GetAllPromotionsClient(signalCtx)
+	if err != nil {
+		return fmt.Errorf("err to get promotions without rules client: %w", err)
+	}
+	log.WithField("count", len(rulesPromotions)).Info("promotions loaded")
 
-	provider := &OptionsProvider{rateBPS: 100, rules: testHardRules}
+	provider := &OptionsProvider{rateBPS: 100, rules: rulesPromotions}
 	service := usecase.NewService(provider)
 	gRPCBenefitHandler := benefit.NewHandler(service)
 	gRPCServer := server.NewGRPCServer(

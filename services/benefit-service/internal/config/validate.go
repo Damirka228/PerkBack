@@ -12,6 +12,12 @@ func (c Config) Validate() error {
 	if c.HTTP.Addr == "" {
 		return fmt.Errorf("http addr is empty")
 	}
+	if c.RulesService.Addr == "" {
+		return fmt.Errorf("rules service address is empty")
+	}
+	if c.RulesService.RequestTimeout <= 0 {
+		return fmt.Errorf("timeout rule service <= 0")
+	}
 	if c.Timeout <= 0 {
 		return fmt.Errorf("timeout <= 0")
 	}
