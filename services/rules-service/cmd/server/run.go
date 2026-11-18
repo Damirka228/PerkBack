@@ -7,13 +7,16 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	kafkaclient "github.com/Damirka228/PerkBack/services/rules-service/internal/client/kafka"
 	"github.com/Damirka228/PerkBack/services/rules-service/internal/config"
 	"github.com/Damirka228/PerkBack/services/rules-service/internal/handlers/rules"
 	"github.com/Damirka228/PerkBack/services/rules-service/internal/logger"
 	"github.com/Damirka228/PerkBack/services/rules-service/internal/server"
 	"github.com/Damirka228/PerkBack/services/rules-service/internal/storage"
 	"github.com/Damirka228/PerkBack/services/rules-service/internal/usecase"
+	"github.com/Damirka228/PerkBack/services/rules-service/internal/worker"
 	"google.golang.org/grpc"
 )
 
@@ -49,39 +52,63 @@ func run(ctx context.Context, configPath string) error {
 		log.Info("PostgreSQL pool closed")
 	}()
 
+	producer, err := kafkaclient.NewProducer(
+		[]string{"localhost:9092"},
+		"promotions.event",
+		5*time.Second,
+	)
+	if err != nil {
+		return fmt.Errorf("create producer kafka:%w", err)
+	}
+	defer func() {
+		if err := producer.Close(); err != nil {
+			log.WithError(err).Error("close kafka producer")
+		}
+	}()
+
+	outboxWorker := worker.NewOutboxWorker(repo, producer, 10)
+
 	service := usecase.NewService(repo)
 	rulesHandler := rules.NewHandler(service)
 	grpcServer := server.NewGRPCServer(cfg.GRPC.Address, rulesHandler, log)
 
 	log.WithField("addr", cfg.GRPC.Address).Info("starting gRPC server")
-	errCh := make(chan error, 1)
-	go func() { errCh <- grpcServer.Run() }()
 
+	errCh := make(chan error, 2)
+	go func() {
+		err := grpcServer.Run()
+		if errors.Is(err, grpc.ErrServerStopped) {
+			err = nil
+		}
+		errCh <- err
+	}()
+	go func() {
+		err := outboxWorker.Run(signalCtx, 500*time.Millisecond, 3*time.Second, log)
+		if err != nil {
+			err = fmt.Errorf("outbox worker: %w", err)
+		}
+		errCh <- err
+	}()
 	var runErr error
-	serverExited := false
+	received := 0
+
 	select {
 	case <-signalCtx.Done():
-		log.WithField("reason", "signal_or_context").Info("shutdown requested")
+		log.Info("shutdown requested by signal or context")
 	case runErr = <-errCh:
-		serverExited = true
-		log.WithField("reason", "server_exit").Warn("shutdown requested")
+		received++
+		log.WithError(runErr).Warn("application component stopped")
 	}
 	stop()
-
-	shutdownErr := server.Shutdown(grpcServer, cfg.ShutdownTimeout, log)
-
-	if !serverExited {
-		runErr = <-errCh
+	shutdownErr := server.Shutdown(
+		grpcServer,
+		cfg.ShutdownTimeout,
+		log,
+	)
+	for received < 2 {
+		runErr = errors.Join(runErr, <-errCh)
+		received++
 	}
-	if errors.Is(runErr, grpc.ErrServerStopped) {
-		runErr = nil
-	}
 
-	if runErr != nil {
-		if shutdownErr != nil {
-			log.WithError(shutdownErr).Error("additional shutdown error")
-		}
-		return runErr
-	}
-	return shutdownErr
+	return errors.Join(runErr, shutdownErr)
 }
