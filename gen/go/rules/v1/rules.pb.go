@@ -57,6 +57,82 @@ func (*GetAllPromotionsRequest) Descriptor() ([]byte, []int) {
 	return file_rules_v1_rules_proto_rawDescGZIP(), []int{0}
 }
 
+type CreatePromotionRequest struct {
+	state                    protoimpl.MessageState `protogen:"open.v1"`
+	ShopId                   string                 `protobuf:"bytes,1,opt,name=shop_id,json=shopId,proto3" json:"shop_id,omitempty"`
+	CategoryId               string                 `protobuf:"bytes,2,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	MinPurchaseAmountKopecks int64                  `protobuf:"varint,3,opt,name=min_purchase_amount_kopecks,json=minPurchaseAmountKopecks,proto3" json:"min_purchase_amount_kopecks,omitempty"`
+	DiscountKopecks          int64                  `protobuf:"varint,4,opt,name=discount_kopecks,json=discountKopecks,proto3" json:"discount_kopecks,omitempty"`
+	RateBps                  int64                  `protobuf:"varint,5,opt,name=rate_bps,json=rateBps,proto3" json:"rate_bps,omitempty"`
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
+}
+
+func (x *CreatePromotionRequest) Reset() {
+	*x = CreatePromotionRequest{}
+	mi := &file_rules_v1_rules_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreatePromotionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreatePromotionRequest) ProtoMessage() {}
+
+func (x *CreatePromotionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rules_v1_rules_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreatePromotionRequest.ProtoReflect.Descriptor instead.
+func (*CreatePromotionRequest) Descriptor() ([]byte, []int) {
+	return file_rules_v1_rules_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *CreatePromotionRequest) GetShopId() string {
+	if x != nil {
+		return x.ShopId
+	}
+	return ""
+}
+
+func (x *CreatePromotionRequest) GetCategoryId() string {
+	if x != nil {
+		return x.CategoryId
+	}
+	return ""
+}
+
+func (x *CreatePromotionRequest) GetMinPurchaseAmountKopecks() int64 {
+	if x != nil {
+		return x.MinPurchaseAmountKopecks
+	}
+	return 0
+}
+
+func (x *CreatePromotionRequest) GetDiscountKopecks() int64 {
+	if x != nil {
+		return x.DiscountKopecks
+	}
+	return 0
+}
+
+func (x *CreatePromotionRequest) GetRateBps() int64 {
+	if x != nil {
+		return x.RateBps
+	}
+	return 0
+}
+
 type Promotion struct {
 	state                    protoimpl.MessageState `protogen:"open.v1"`
 	Id                       string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -71,7 +147,7 @@ type Promotion struct {
 
 func (x *Promotion) Reset() {
 	*x = Promotion{}
-	mi := &file_rules_v1_rules_proto_msgTypes[1]
+	mi := &file_rules_v1_rules_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -83,7 +159,7 @@ func (x *Promotion) String() string {
 func (*Promotion) ProtoMessage() {}
 
 func (x *Promotion) ProtoReflect() protoreflect.Message {
-	mi := &file_rules_v1_rules_proto_msgTypes[1]
+	mi := &file_rules_v1_rules_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -96,7 +172,7 @@ func (x *Promotion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Promotion.ProtoReflect.Descriptor instead.
 func (*Promotion) Descriptor() ([]byte, []int) {
-	return file_rules_v1_rules_proto_rawDescGZIP(), []int{1}
+	return file_rules_v1_rules_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Promotion) GetId() string {
@@ -150,7 +226,7 @@ type GetAllPromotionsResponse struct {
 
 func (x *GetAllPromotionsResponse) Reset() {
 	*x = GetAllPromotionsResponse{}
-	mi := &file_rules_v1_rules_proto_msgTypes[2]
+	mi := &file_rules_v1_rules_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -162,7 +238,7 @@ func (x *GetAllPromotionsResponse) String() string {
 func (*GetAllPromotionsResponse) ProtoMessage() {}
 
 func (x *GetAllPromotionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rules_v1_rules_proto_msgTypes[2]
+	mi := &file_rules_v1_rules_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -175,7 +251,7 @@ func (x *GetAllPromotionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllPromotionsResponse.ProtoReflect.Descriptor instead.
 func (*GetAllPromotionsResponse) Descriptor() ([]byte, []int) {
-	return file_rules_v1_rules_proto_rawDescGZIP(), []int{2}
+	return file_rules_v1_rules_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetAllPromotionsResponse) GetPromotions() []*Promotion {
@@ -185,12 +261,63 @@ func (x *GetAllPromotionsResponse) GetPromotions() []*Promotion {
 	return nil
 }
 
+type CreatePromotionResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreatePromotionResponse) Reset() {
+	*x = CreatePromotionResponse{}
+	mi := &file_rules_v1_rules_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreatePromotionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreatePromotionResponse) ProtoMessage() {}
+
+func (x *CreatePromotionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rules_v1_rules_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreatePromotionResponse.ProtoReflect.Descriptor instead.
+func (*CreatePromotionResponse) Descriptor() ([]byte, []int) {
+	return file_rules_v1_rules_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *CreatePromotionResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
 var File_rules_v1_rules_proto protoreflect.FileDescriptor
 
 const file_rules_v1_rules_proto_rawDesc = "" +
 	"\n" +
 	"\x14rules/v1/rules.proto\x12\brules.v1\"\x19\n" +
-	"\x17GetAllPromotionsRequest\"\xda\x01\n" +
+	"\x17GetAllPromotionsRequest\"\xd7\x01\n" +
+	"\x16CreatePromotionRequest\x12\x17\n" +
+	"\ashop_id\x18\x01 \x01(\tR\x06shopId\x12\x1f\n" +
+	"\vcategory_id\x18\x02 \x01(\tR\n" +
+	"categoryId\x12=\n" +
+	"\x1bmin_purchase_amount_kopecks\x18\x03 \x01(\x03R\x18minPurchaseAmountKopecks\x12)\n" +
+	"\x10discount_kopecks\x18\x04 \x01(\x03R\x0fdiscountKopecks\x12\x19\n" +
+	"\brate_bps\x18\x05 \x01(\x03R\arateBps\"\xda\x01\n" +
 	"\tPromotion\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\ashop_id\x18\x02 \x01(\tR\x06shopId\x12\x1f\n" +
@@ -202,9 +329,12 @@ const file_rules_v1_rules_proto_rawDesc = "" +
 	"\x18GetAllPromotionsResponse\x123\n" +
 	"\n" +
 	"promotions\x18\x01 \x03(\v2\x13.rules.v1.PromotionR\n" +
-	"promotions2i\n" +
+	"promotions\")\n" +
+	"\x17CreatePromotionResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id2\xc1\x01\n" +
 	"\fRulesService\x12Y\n" +
-	"\x10GetAllPromotions\x12!.rules.v1.GetAllPromotionsRequest\x1a\".rules.v1.GetAllPromotionsResponseB8Z6github.com/Damirka228/PerkBack/gen/go/rules/v1;rulesv1b\x06proto3"
+	"\x10GetAllPromotions\x12!.rules.v1.GetAllPromotionsRequest\x1a\".rules.v1.GetAllPromotionsResponse\x12V\n" +
+	"\x0fCreatePromotion\x12 .rules.v1.CreatePromotionRequest\x1a!.rules.v1.CreatePromotionResponseB8Z6github.com/Damirka228/PerkBack/gen/go/rules/v1;rulesv1b\x06proto3"
 
 var (
 	file_rules_v1_rules_proto_rawDescOnce sync.Once
@@ -218,18 +348,22 @@ func file_rules_v1_rules_proto_rawDescGZIP() []byte {
 	return file_rules_v1_rules_proto_rawDescData
 }
 
-var file_rules_v1_rules_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_rules_v1_rules_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_rules_v1_rules_proto_goTypes = []any{
 	(*GetAllPromotionsRequest)(nil),  // 0: rules.v1.GetAllPromotionsRequest
-	(*Promotion)(nil),                // 1: rules.v1.Promotion
-	(*GetAllPromotionsResponse)(nil), // 2: rules.v1.GetAllPromotionsResponse
+	(*CreatePromotionRequest)(nil),   // 1: rules.v1.CreatePromotionRequest
+	(*Promotion)(nil),                // 2: rules.v1.Promotion
+	(*GetAllPromotionsResponse)(nil), // 3: rules.v1.GetAllPromotionsResponse
+	(*CreatePromotionResponse)(nil),  // 4: rules.v1.CreatePromotionResponse
 }
 var file_rules_v1_rules_proto_depIdxs = []int32{
-	1, // 0: rules.v1.GetAllPromotionsResponse.promotions:type_name -> rules.v1.Promotion
+	2, // 0: rules.v1.GetAllPromotionsResponse.promotions:type_name -> rules.v1.Promotion
 	0, // 1: rules.v1.RulesService.GetAllPromotions:input_type -> rules.v1.GetAllPromotionsRequest
-	2, // 2: rules.v1.RulesService.GetAllPromotions:output_type -> rules.v1.GetAllPromotionsResponse
-	2, // [2:3] is the sub-list for method output_type
-	1, // [1:2] is the sub-list for method input_type
+	1, // 2: rules.v1.RulesService.CreatePromotion:input_type -> rules.v1.CreatePromotionRequest
+	3, // 3: rules.v1.RulesService.GetAllPromotions:output_type -> rules.v1.GetAllPromotionsResponse
+	4, // 4: rules.v1.RulesService.CreatePromotion:output_type -> rules.v1.CreatePromotionResponse
+	3, // [3:5] is the sub-list for method output_type
+	1, // [1:3] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -246,7 +380,7 @@ func file_rules_v1_rules_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_rules_v1_rules_proto_rawDesc), len(file_rules_v1_rules_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	RulesService_GetAllPromotions_FullMethodName = "/rules.v1.RulesService/GetAllPromotions"
+	RulesService_CreatePromotion_FullMethodName  = "/rules.v1.RulesService/CreatePromotion"
 )
 
 // RulesServiceClient is the client API for RulesService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RulesServiceClient interface {
 	GetAllPromotions(ctx context.Context, in *GetAllPromotionsRequest, opts ...grpc.CallOption) (*GetAllPromotionsResponse, error)
+	CreatePromotion(ctx context.Context, in *CreatePromotionRequest, opts ...grpc.CallOption) (*CreatePromotionResponse, error)
 }
 
 type rulesServiceClient struct {
@@ -47,11 +49,22 @@ func (c *rulesServiceClient) GetAllPromotions(ctx context.Context, in *GetAllPro
 	return out, nil
 }
 
+func (c *rulesServiceClient) CreatePromotion(ctx context.Context, in *CreatePromotionRequest, opts ...grpc.CallOption) (*CreatePromotionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreatePromotionResponse)
+	err := c.cc.Invoke(ctx, RulesService_CreatePromotion_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RulesServiceServer is the server API for RulesService service.
 // All implementations must embed UnimplementedRulesServiceServer
 // for forward compatibility.
 type RulesServiceServer interface {
 	GetAllPromotions(context.Context, *GetAllPromotionsRequest) (*GetAllPromotionsResponse, error)
+	CreatePromotion(context.Context, *CreatePromotionRequest) (*CreatePromotionResponse, error)
 	mustEmbedUnimplementedRulesServiceServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedRulesServiceServer struct{}
 
 func (UnimplementedRulesServiceServer) GetAllPromotions(context.Context, *GetAllPromotionsRequest) (*GetAllPromotionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAllPromotions not implemented")
+}
+func (UnimplementedRulesServiceServer) CreatePromotion(context.Context, *CreatePromotionRequest) (*CreatePromotionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreatePromotion not implemented")
 }
 func (UnimplementedRulesServiceServer) mustEmbedUnimplementedRulesServiceServer() {}
 func (UnimplementedRulesServiceServer) testEmbeddedByValue()                      {}
@@ -104,6 +120,24 @@ func _RulesService_GetAllPromotions_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RulesService_CreatePromotion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePromotionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RulesServiceServer).CreatePromotion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RulesService_CreatePromotion_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RulesServiceServer).CreatePromotion(ctx, req.(*CreatePromotionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RulesService_ServiceDesc is the grpc.ServiceDesc for RulesService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var RulesService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAllPromotions",
 			Handler:    _RulesService_GetAllPromotions_Handler,
+		},
+		{
+			MethodName: "CreatePromotion",
+			Handler:    _RulesService_CreatePromotion_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

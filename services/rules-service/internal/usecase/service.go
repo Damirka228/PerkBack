@@ -9,6 +9,7 @@ import (
 
 type PromotionRepository interface {
 	GetAllPromotions(ctx context.Context) ([]domain.Promotion, error)
+	CreatePromotion(ctx context.Context, promotion domain.Promotion) error
 }
 
 type Service struct {
@@ -27,4 +28,14 @@ func (s *Service) GetAllPromotions(ctx context.Context) ([]domain.Promotion, err
 		return nil, fmt.Errorf("err get promotions:%w", err)
 	}
 	return promotions, nil
+}
+
+func (s *Service) CreatePromotion(ctx context.Context, promotion domain.Promotion) error {
+	if err := promotion.Validate(); err != nil {
+		return fmt.Errorf("err validate promotions:%w", err)
+	}
+	if err := s.promotionRepository.CreatePromotion(ctx, promotion); err != nil {
+		return fmt.Errorf("err to get promotions to repo:%w", err)
+	}
+	return nil
 }

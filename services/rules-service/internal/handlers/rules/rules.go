@@ -6,12 +6,14 @@ import (
 
 	rulesv1 "github.com/Damirka228/PerkBack/gen/go/rules/v1"
 	"github.com/Damirka228/PerkBack/services/rules-service/internal/domain"
+	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type Rules interface {
 	GetAllPromotions(ctx context.Context) ([]domain.Promotion, error)
+	CreatePromotion(ctx context.Context, promotion domain.Promotion) error
 }
 
 type Handler struct {
@@ -51,5 +53,27 @@ func (h *Handler) GetAllPromotions(ctx context.Context, req *rulesv1.GetAllPromo
 	}
 	return &rulesv1.GetAllPromotionsResponse{
 		Promotions: result,
+	}, nil
+}
+
+func (h *Handler) CreatePromotion(ctx context.Context, req *rulesv1.CreatePromotionRequest) (*rulesv1.CreatePromotionResponse, error) {
+	promotion := domain.Promotion{
+		ID:                   uuid.NewString(),
+		ShopID:               req.GetShopId(),
+		CategoryID:           req.GetCategoryId(),
+		MinPurchaseAmountKop: req.GetMinPurchaseAmountKopecks(),
+		DiscountKop:          req.GetDiscountKopecks(),
+		RateBPS:              req.GetRateBps(),
+	}
+
+	if err := h.rules.CreatePromotion(ctx, promotion); err != nil {
+		if errors.Is(err, domain.ErrInvalidPromotion) {
+			return nil, status.Error(codes.InvalidArgument, "invalid promotions")
+		}
+		return nil, status.Error(codes.Internal, "could not create ptomotion")
+	}
+
+	return &rulesv1.CreatePromotionResponse{
+		Id: promotion.ID,
 	}, nil
 }
