@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/client/rules"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/config"
+	"github.com/Damirka228/PerkBack/services/benefit-service/internal/consumer/kafka"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/domain"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/handlers/benefit"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/handlers/router"
@@ -20,12 +22,36 @@ import (
 	"google.golang.org/grpc"
 )
 
+var (
+	ErrRuleIdEmpty = errors.New("err rule id is empty")
+)
+
 type OptionsProvider struct {
+	mu      sync.RWMutex
 	rateBPS int64
 	rules   []domain.RulePromotion
 }
 
+func (p *OptionsProvider) Upsert(rule domain.RulePromotion) error {
+	if rule.ID == "" {
+		return ErrRuleIdEmpty
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	for i, promo := range p.rules {
+		if promo.ID == rule.ID {
+			p.rules[i] = rule
+			return nil
+		}
+	}
+	p.rules = append(p.rules, rule)
+
+	return nil
+}
+
 func (p *OptionsProvider) GetOptions(ctx context.Context, input usecase.CalculateInput) ([]usecase.BestVariant, error) {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
 	bestVatiant := []usecase.BestVariant{
 		{DiscountKop: 0, RateBPS: p.rateBPS},
 	}
@@ -100,6 +126,22 @@ func run(ctx context.Context, configPath string) error {
 	log.WithField("count", len(rulesPromotions)).Info("promotions loaded")
 
 	provider := &OptionsProvider{rateBPS: 100, rules: rulesPromotions}
+	processor := kafka.NewPromotionEventProcessor(provider)
+	consumer, err := kafka.NewConsumer(
+		[]string{"localhost:9092"},
+		"promotions.event",
+		"benefit-service-local",
+		processor,
+	)
+	if err != nil {
+		return fmt.Errorf("create kafka consumer: %w", err)
+	}
+	defer func() {
+		if err := consumer.Close(); err != nil {
+			log.WithError(err).Error("close kafka consumer")
+		}
+	}()
+
 	service := usecase.NewService(provider)
 	gRPCBenefitHandler := benefit.NewHandler(service)
 	gRPCServer := server.NewGRPCServer(
@@ -112,9 +154,16 @@ func run(ctx context.Context, configPath string) error {
 		"addr":   cfg.GRPC.Addr,
 	}).Info("starting gRPC server")
 
-	errCh := make(chan error, 2)
+	errCh := make(chan error, 3)
 	go func() { errCh <- httpServer.Run() }()
 	go func() { errCh <- gRPCServer.Run() }()
+	go func() {
+		err := consumer.Run(signalCtx)
+		if err != nil {
+			err = fmt.Errorf("kafka consumer: %w", err)
+		}
+		errCh <- err
+	}()
 
 	var runErr error
 	received := 0
@@ -132,7 +181,7 @@ func run(ctx context.Context, configPath string) error {
 	if errors.Is(runErr, grpc.ErrServerStopped) {
 		runErr = nil
 	}
-	for received < 2 {
+	for received < 3 {
 		err := <-errCh
 		received++
 		if err == nil || errors.Is(err, grpc.ErrServerStopped) {
