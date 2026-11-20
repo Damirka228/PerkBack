@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sort"
 	"sync"
 	"syscall"
 
@@ -45,6 +46,9 @@ func (p *OptionsProvider) Upsert(rule domain.RulePromotion) error {
 		}
 	}
 	p.rules = append(p.rules, rule)
+	sort.Slice(p.rules, func(i, j int) bool {
+		return p.rules[i].ID < p.rules[j].ID
+	})
 
 	return nil
 }

@@ -185,7 +185,7 @@ func TestOptionsProviderUpsert(t *testing.T) {
 		{
 			name:    "append_new_id_without_replacing_existing_rule",
 			initial: []domain.RulePromotion{other}, rule: rule, repetitions: 1,
-			want: []domain.RulePromotion{other, rule},
+			want: []domain.RulePromotion{rule, other},
 		},
 		{
 			name:    "replace_all_fields_of_matching_id_and_preserve_order",
@@ -195,7 +195,7 @@ func TestOptionsProviderUpsert(t *testing.T) {
 		{
 			name:    "repeated_event_does_not_duplicate_rule",
 			initial: []domain.RulePromotion{other}, rule: rule, repetitions: 3,
-			want: []domain.RulePromotion{other, rule},
+			want: []domain.RulePromotion{rule, other},
 		},
 		{
 			name:    "empty_id_does_not_modify_existing_rules",
