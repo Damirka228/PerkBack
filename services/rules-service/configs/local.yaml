@@ -7,6 +7,10 @@ http:
   address: ":8081"
 database:
   connect_timeout: 5s
+kafka:
+  brokers: ["localhost:9092"]
+  topic: "promotions.event"
+  publish_timeout: 5s
 log:
   level: debug
 

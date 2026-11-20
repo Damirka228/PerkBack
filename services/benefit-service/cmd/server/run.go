@@ -132,9 +132,9 @@ func run(ctx context.Context, configPath string) error {
 	provider := &OptionsProvider{rateBPS: 100, rules: rulesPromotions}
 	processor := kafka.NewPromotionEventProcessor(provider)
 	consumer, err := kafka.NewConsumer(
-		[]string{"localhost:9092"},
-		"promotions.event",
-		"benefit-service-local",
+		cfg.KafkaConfig.Brokers,
+		cfg.KafkaConfig.Topic,
+		cfg.KafkaConfig.GroupId,
 		processor,
 	)
 	if err != nil {

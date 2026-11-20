@@ -24,11 +24,18 @@ type RulesService struct {
 	RequestTimeout time.Duration `yaml:"request_timeout"`
 }
 
+type KafkaConfig struct {
+	Brokers []string `yaml:"brokers"`
+	Topic   string   `yaml:"topic"`
+	GroupId string   `yaml:"group_id"`
+}
+
 type Config struct {
 	App             AppConfig     `yaml:"app"`
 	GRPC            GRPCConfig    `yaml:"grpc"`
 	HTTP            HTTPConfig    `yaml:"http"`
 	RulesService    RulesService  `yaml:"rules-service"`
+	KafkaConfig     KafkaConfig   `yaml:"kafka"`
 	Log             LogConfig     `yaml:"log"`
 	Timeout         time.Duration `yaml:"timeout"`
 	ShutdownTimeout time.Duration `yaml:"shutdown_timeout"`

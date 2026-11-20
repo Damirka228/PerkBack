@@ -53,9 +53,9 @@ func run(ctx context.Context, configPath string) error {
 	}()
 
 	producer, err := kafkaclient.NewProducer(
-		[]string{"localhost:9092"},
-		"promotions.event",
-		5*time.Second,
+		cfg.KafkaConfig.Brokers,
+		cfg.KafkaConfig.Topic,
+		cfg.KafkaConfig.PublishTimeout,
 	)
 	if err != nil {
 		return fmt.Errorf("create producer kafka:%w", err)
