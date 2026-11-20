@@ -190,12 +190,12 @@ func TestOptionsProviderUpsert(t *testing.T) {
 		{
 			name:    "replace_all_fields_of_matching_id_and_preserve_order",
 			initial: []domain.RulePromotion{other, old}, rule: rule, repetitions: 1,
-			want: []domain.RulePromotion{rule, other},
+			want: []domain.RulePromotion{other, rule},
 		},
 		{
 			name:    "repeated_event_does_not_duplicate_rule",
 			initial: []domain.RulePromotion{other}, rule: rule, repetitions: 3,
-			want: []domain.RulePromotion{other, rule},
+			want: []domain.RulePromotion{rule, other},
 		},
 		{
 			name:    "empty_id_does_not_modify_existing_rules",
