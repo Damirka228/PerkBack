@@ -46,6 +46,7 @@ func (c *Client) GetAllPromotionsClient(ctx context.Context) ([]domain.RulePromo
 	var promotions []domain.RulePromotion
 	for _, promo := range resp.GetPromotions() {
 		promotions = append(promotions, domain.RulePromotion{
+			ID:                   promo.GetId(),
 			ShopID:               promo.ShopId,
 			CategoryID:           promo.CategoryId,
 			MinPurchaseAmountKop: promo.MinPurchaseAmountKopecks,

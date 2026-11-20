@@ -7,6 +7,7 @@ type OptionResult struct {
 }
 
 type RulePromotion struct {
+	ID                   string
 	ShopID               string
 	CategoryID           string
 	MinPurchaseAmountKop int64
