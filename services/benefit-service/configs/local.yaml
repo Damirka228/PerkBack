@@ -11,6 +11,11 @@ http:
 log:
   level: debug
 
+kafka:
+  brokers: ["localhost:9092"]
+  topic: "promotions.event"
+  group_id: "benefit-service-local"
+
 rules-service:
   address: "127.0.0.1:9091"
   request_timeout: 3s
