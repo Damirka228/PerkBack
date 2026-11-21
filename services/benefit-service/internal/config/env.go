@@ -11,4 +11,8 @@ func ApplyEnv(cfg *Config) {
 	if ok {
 		cfg.RulesService.Addr = rulesAddr
 	}
+	dbURL, ok := os.LookupEnv("BENEFIT_DATABASE_URL")
+	if ok {
+		cfg.DB.DSN = dbURL
+	}
 }

@@ -20,5 +20,8 @@ rules-service:
   address: "127.0.0.1:9091"
   request_timeout: 3s
 
+database:
+  connect_timeout: 5s
+
 timeout: 10s
 shutdown_timeout: 10s

@@ -18,6 +18,7 @@ import (
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/handlers/router"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/logger"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/server"
+	"github.com/Damirka228/PerkBack/services/benefit-service/internal/storage"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/usecase"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -105,6 +106,11 @@ func run(ctx context.Context, configPath string) error {
 	signalCtx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
+	repo, err := storage.NewStorage(signalCtx, cfg.DB)
+	if err != nil {
+		return fmt.Errorf("err to start db storage: %w", err)
+	}
+	defer repo.Close()
 	httpRouter := router.NewRouter()
 	httpServer := server.NewHTTPServer(
 		cfg.HTTP.Addr, httpRouter, cfg.Timeout,
