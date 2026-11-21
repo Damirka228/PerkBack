@@ -41,5 +41,11 @@ func (c Config) Validate() error {
 	if strings.TrimSpace(c.KafkaConfig.GroupId) == "" {
 		return fmt.Errorf("kafka group id is empty")
 	}
+	if strings.TrimSpace(c.DB.DSN) == "" {
+		return fmt.Errorf("BENEFIT_DATABASE_URL is required")
+	}
+	if c.DB.ConnectTimeout <= 0 {
+		return fmt.Errorf("database connect timeout must be positive")
+	}
 	return nil
 }

@@ -30,12 +30,18 @@ type KafkaConfig struct {
 	GroupId string   `yaml:"group_id"`
 }
 
+type DB struct {
+	DSN            string        `yaml:"-"`
+	ConnectTimeout time.Duration `yaml:"connect_timeout"`
+}
+
 type Config struct {
 	App             AppConfig     `yaml:"app"`
 	GRPC            GRPCConfig    `yaml:"grpc"`
 	HTTP            HTTPConfig    `yaml:"http"`
 	RulesService    RulesService  `yaml:"rules-service"`
 	KafkaConfig     KafkaConfig   `yaml:"kafka"`
+	DB              DB            `yaml:"database"`
 	Log             LogConfig     `yaml:"log"`
 	Timeout         time.Duration `yaml:"timeout"`
 	ShutdownTimeout time.Duration `yaml:"shutdown_timeout"`

@@ -59,3 +59,15 @@ migrate-down:
 		migrate -path services/rules-service/migrations \
 			-database "$$RULES_DATABASE_URL" down 1
 .PHONY: migrate-up migrate-down
+
+benefit-migrate-up:
+	@. ./.env && \
+		migrate -path services/benefit-service/migrations \
+			-database "$${BENEFIT_DATABASE_URL:?BENEFIT_DATABASE_URL is required}" up
+
+benefit-migrate-down:
+	@. ./.env && \
+		migrate -path services/benefit-service/migrations \
+			-database "$${BENEFIT_DATABASE_URL:?BENEFIT_DATABASE_URL is required}" down 1
+
+.PHONY: benefit-migrate-up benefit-migrate-down
