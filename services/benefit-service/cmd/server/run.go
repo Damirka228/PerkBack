@@ -106,7 +106,7 @@ func run(ctx context.Context, configPath string) error {
 	signalCtx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	repo, err := storage.NewStorage(signalCtx, cfg.DB)
+	repo, err := storage.NewStorage(signalCtx, cfg.DB, log)
 	if err != nil {
 		return fmt.Errorf("err to start db storage: %w", err)
 	}
