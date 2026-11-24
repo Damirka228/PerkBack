@@ -113,7 +113,7 @@ func TestReserveCashbackSuccess(t *testing.T) {
 			input.PurchaseAmountKop = tt.purchase
 			provider := &optionsProviderTest{variants: tt.variants}
 			repository := &fakeCashbackReserver{amount: tt.reserved}
-			service := usecase.NewService(provider, repository)
+			service := usecase.NewService(provider, repository, nil)
 			ctx := t.Context()
 
 			before := time.Now().UTC()
@@ -161,7 +161,7 @@ func TestReserveCashbackValidationDoesNotCallDependencies(t *testing.T) {
 			input.UserID = tt.userID
 			provider := &optionsProviderTest{variants: []usecase.BestVariant{{RateBPS: 500}}}
 			repository := &fakeCashbackReserver{amount: 5_000}
-			service := usecase.NewService(provider, repository)
+			service := usecase.NewService(provider, repository, nil)
 
 			amount, err := service.ReserveCashback(t.Context(), tt.orderID, input)
 			if amount != 0 || !errors.Is(err, tt.wantErr) {
@@ -212,7 +212,7 @@ func TestReserveCashbackCalculationErrorDoesNotCreateReservation(t *testing.T) {
 			input.PurchaseAmountKop = tt.purchase
 			provider := &optionsProviderTest{variants: tt.variants, err: tt.providerErr}
 			repository := &fakeCashbackReserver{amount: 5_000}
-			service := usecase.NewService(provider, repository)
+			service := usecase.NewService(provider, repository, nil)
 
 			ctx := t.Context()
 			amount, err := service.ReserveCashback(ctx, "order-1", input)
@@ -247,7 +247,7 @@ func TestReserveCashbackPreservesRepositoryError(t *testing.T) {
 			provider := &optionsProviderTest{variants: []usecase.BestVariant{{RateBPS: 500}}}
 			// A repository result must not be reported as success alongside an error.
 			repository := &fakeCashbackReserver{amount: 2_000, err: tt.err}
-			service := usecase.NewService(provider, repository)
+			service := usecase.NewService(provider, repository, nil)
 			ctx := t.Context()
 
 			amount, err := service.ReserveCashback(ctx, "order-1", reservationInput())
@@ -269,7 +269,7 @@ func TestReserveCashbackPreservesRepositoryError(t *testing.T) {
 func TestCalculateDoesNotReserveCashback(t *testing.T) {
 	provider := &optionsProviderTest{variants: []usecase.BestVariant{{RateBPS: 500}}}
 	repository := &fakeCashbackReserver{amount: 2_000}
-	service := usecase.NewService(provider, repository)
+	service := usecase.NewService(provider, repository, nil)
 
 	got, err := service.Calculate(t.Context(), reservationInput())
 	want := domain.OptionResult{PayableKop: 100_000, CashbackKop: 5_000}
