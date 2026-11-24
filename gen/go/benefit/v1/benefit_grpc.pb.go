@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	BenefitService_CalculateBenefit_FullMethodName = "/benefit.v1.BenefitService/CalculateBenefit"
+	BenefitService_ReserveCashback_FullMethodName  = "/benefit.v1.BenefitService/ReserveCashback"
 )
 
 // BenefitServiceClient is the client API for BenefitService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BenefitServiceClient interface {
 	CalculateBenefit(ctx context.Context, in *CalculateBenefitRequest, opts ...grpc.CallOption) (*CalculateBenefitResponse, error)
+	ReserveCashback(ctx context.Context, in *ReserveCashbackRequest, opts ...grpc.CallOption) (*ReserveCashbackResponse, error)
 }
 
 type benefitServiceClient struct {
@@ -47,11 +49,22 @@ func (c *benefitServiceClient) CalculateBenefit(ctx context.Context, in *Calcula
 	return out, nil
 }
 
+func (c *benefitServiceClient) ReserveCashback(ctx context.Context, in *ReserveCashbackRequest, opts ...grpc.CallOption) (*ReserveCashbackResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReserveCashbackResponse)
+	err := c.cc.Invoke(ctx, BenefitService_ReserveCashback_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BenefitServiceServer is the server API for BenefitService service.
 // All implementations must embed UnimplementedBenefitServiceServer
 // for forward compatibility.
 type BenefitServiceServer interface {
 	CalculateBenefit(context.Context, *CalculateBenefitRequest) (*CalculateBenefitResponse, error)
+	ReserveCashback(context.Context, *ReserveCashbackRequest) (*ReserveCashbackResponse, error)
 	mustEmbedUnimplementedBenefitServiceServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedBenefitServiceServer struct{}
 
 func (UnimplementedBenefitServiceServer) CalculateBenefit(context.Context, *CalculateBenefitRequest) (*CalculateBenefitResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CalculateBenefit not implemented")
+}
+func (UnimplementedBenefitServiceServer) ReserveCashback(context.Context, *ReserveCashbackRequest) (*ReserveCashbackResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ReserveCashback not implemented")
 }
 func (UnimplementedBenefitServiceServer) mustEmbedUnimplementedBenefitServiceServer() {}
 func (UnimplementedBenefitServiceServer) testEmbeddedByValue()                        {}
@@ -104,6 +120,24 @@ func _BenefitService_CalculateBenefit_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BenefitService_ReserveCashback_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReserveCashbackRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BenefitServiceServer).ReserveCashback(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BenefitService_ReserveCashback_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BenefitServiceServer).ReserveCashback(ctx, req.(*ReserveCashbackRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BenefitService_ServiceDesc is the grpc.ServiceDesc for BenefitService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var BenefitService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CalculateBenefit",
 			Handler:    _BenefitService_CalculateBenefit_Handler,
+		},
+		{
+			MethodName: "ReserveCashback",
+			Handler:    _BenefitService_ReserveCashback_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
