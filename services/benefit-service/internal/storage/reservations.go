@@ -13,6 +13,9 @@ import (
 var (
 	ErrOrderConflict   = errors.New("order belongs to another user or period")
 	ErrNegativeKopecks = errors.New("requested cashback must be non-negative")
+	ErrStatusCancel    = errors.New("order status is canceled error pay")
+	ErrUnknownStatus   = errors.New("unknow status is cashback reservation")
+	ErrCanceledOrder   = errors.New("order are credited error canceled")
 )
 
 type monthlyLimit struct {
@@ -30,7 +33,7 @@ type cashbackReservation struct {
 
 func (s *Storage) GetReservByOrderID(ctx context.Context, orderID string) (domain.CashbackReservation, error) {
 	var result domain.CashbackReservation
-	sqlQuery := `
+	const sqlQuery = `
 		SELECT user_id, period_start, amount_kopecks, status
 		FROM cashback_reservations
 		WHERE order_id = $1
@@ -44,6 +47,69 @@ func (s *Storage) GetReservByOrderID(ctx context.Context, orderID string) (domai
 		return domain.CashbackReservation{}, fmt.Errorf("cashback reserv bd: %w", err)
 	}
 	return result, nil
+}
+
+func (s *Storage) ConfirmCashback(ctx context.Context, orderID, userID string) (int64, error) {
+	var confirmedAmount int64
+	err := s.transaction(ctx, s.log, func(tx pgx.Tx) error {
+		reservation, err := lockReservationForUser(ctx, orderID, userID, tx)
+		if err != nil {
+			return err
+		}
+		switch {
+		case reservation.Status == "credited":
+			confirmedAmount = reservation.AmountKop
+			return nil
+		case reservation.Status == "canceled":
+			return ErrStatusCancel
+		case reservation.Status == "reserved":
+		default:
+			return ErrUnknownStatus
+		}
+		if err := updateReserveCashbackMonthLimit(ctx, reservation.AmountKop, reservation.UserID, reservation.PeriodStart, tx); err != nil {
+			return err
+		}
+		if err := updateStatusReserveCashback(ctx, orderID, tx); err != nil {
+			return err
+		}
+		confirmedAmount = reservation.AmountKop
+		return nil
+	})
+	if err != nil {
+		return 0, fmt.Errorf("err transaction: %w", err)
+	}
+	return confirmedAmount, nil
+}
+
+func (s *Storage) CancelCashback(ctx context.Context, orderId, userId string) error {
+	err := s.transaction(ctx, s.log, func(tx pgx.Tx) error {
+		reservation, err := lockReservationForUser(ctx, orderId, userId, tx)
+		if err != nil {
+			return err
+		}
+		switch {
+		case reservation.Status == "canceled":
+			return nil
+		case reservation.Status == "credited":
+			return ErrCanceledOrder
+		case reservation.Status == "reserved":
+		default:
+			return ErrUnknownStatus
+		}
+
+		if err := updateReserveCancel(ctx, reservation.AmountKop, reservation.UserID, reservation.PeriodStart, tx); err != nil {
+			return err
+		}
+
+		if err := updateStatusCancel(ctx, orderId, tx); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("err transaction: %w", err)
+	}
+	return nil
 }
 
 func (s *Storage) ReserveCashback(ctx context.Context, orderID, userID string, periodStart time.Time, requestedKopecks int64) (int64, error) {
@@ -86,69 +152,4 @@ func (s *Storage) ReserveCashback(ctx context.Context, orderID, userID string, p
 		return 0, err
 	}
 	return amount, nil
-}
-
-func getOrCreateMonthlyLimitForUpdate(ctx context.Context, tx pgx.Tx, userID string, periodStart time.Time) (monthlyLimit, error) {
-	const insertQuery = `
-		INSERT INTO cashback_monthly_limits (user_id, period_start)
-		VALUES ($1, $2)
-		ON CONFLICT (user_id, period_start) DO NOTHING;
-	`
-	if _, err := tx.Exec(ctx, insertQuery, userID, periodStart); err != nil {
-		return monthlyLimit{}, fmt.Errorf("insert user id and period start: %w", err)
-	}
-
-	const selectQuery = `
-		SELECT limit_kopecks, reserved_kopecks, credited_kopecks
-		FROM cashback_monthly_limits
-		WHERE user_id = $1 AND period_start = $2
-		FOR UPDATE;
-	`
-	var limit monthlyLimit
-	err := tx.QueryRow(ctx, selectQuery, userID, periodStart).Scan(
-		&limit.limitKopecks, &limit.reservedKopecks, &limit.creditedKopecks,
-	)
-	if err != nil {
-		return monthlyLimit{}, fmt.Errorf("err row scan: %w", err)
-	}
-	return limit, nil
-}
-
-func findReservation(ctx context.Context, tx pgx.Tx, orderID string) (cashbackReservation, error) {
-	const query = `
-		SELECT user_id, period_start, amount_kopecks, status
-		FROM cashback_reservations
-		WHERE order_id = $1
-	`
-	var reservation cashbackReservation
-	err := tx.QueryRow(ctx, query, orderID).Scan(
-		&reservation.userID, &reservation.periodStart, &reservation.amountKopecks, &reservation.status,
-	)
-	return reservation, err
-}
-
-func calculateReservationAmount(limit monthlyLimit, requestedKopecks int64) int64 {
-	available := limit.limitKopecks - limit.reservedKopecks - limit.creditedKopecks
-	return min(requestedKopecks, available)
-}
-
-func saveReservation(ctx context.Context, tx pgx.Tx, orderID, userID string, periodStart time.Time, amountKopecks int64) error {
-	const updateQuery = `
-		UPDATE cashback_monthly_limits
-		SET reserved_kopecks = reserved_kopecks + $1
-		WHERE user_id = $2 AND period_start = $3
-	`
-	if _, err := tx.Exec(ctx, updateQuery, amountKopecks, userID, periodStart); err != nil {
-		return fmt.Errorf("sql query update limits: %w", err)
-	}
-
-	const insertQuery = `
-		INSERT INTO cashback_reservations
-		(order_id, user_id, period_start, amount_kopecks)
-		VALUES ($1, $2, $3, $4)
-	`
-	if _, err := tx.Exec(ctx, insertQuery, orderID, userID, periodStart, amountKopecks); err != nil {
-		return fmt.Errorf("insert cashback reservation: %w", err)
-	}
-	return nil
 }
