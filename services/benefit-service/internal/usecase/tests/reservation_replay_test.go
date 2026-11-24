@@ -30,7 +30,7 @@ func TestReserveCashbackExistingReservationSkipsCalculationAndCreation(t *testin
 				}
 				// Even unavailable rules must not prevent reading a saved result.
 				provider := &optionsProviderTest{err: errors.New("rules unavailable")}
-				service := usecase.NewService(provider, repository)
+				service := usecase.NewService(provider, repository, nil)
 
 				got, err := service.ReserveCashback(ctx, "order-1", input)
 				if err != nil || got != amount {
@@ -55,7 +55,7 @@ func TestReserveCashbackRepeatAfterRulesChangeReturnsSavedAmount(t *testing.T) {
 	input := reservationInput()
 	provider := &optionsProviderTest{variants: []usecase.BestVariant{{RateBPS: 500}}}
 	repository := &fakeCashbackReserver{amount: 2_000}
-	service := usecase.NewService(provider, repository)
+	service := usecase.NewService(provider, repository, nil)
 
 	first, err := service.ReserveCashback(ctx, "order-1", input)
 	if err != nil || first != 2_000 {
@@ -91,7 +91,7 @@ func TestReserveCashbackExistingOrderRejectsAnotherUser(t *testing.T) {
 			AmountKop: 2_000, Status: "reserved",
 		},
 	}
-	service := usecase.NewService(provider, repository)
+	service := usecase.NewService(provider, repository, nil)
 
 	amount, err := service.ReserveCashback(ctx, "order-1", reservationInput())
 	if amount != 0 || !errors.Is(err, domain.ErrNotUserID) {
@@ -119,7 +119,7 @@ func TestReserveCashbackLookupErrorStopsOperation(t *testing.T) {
 				lookupErr: fmt.Errorf("lookup failed: %w", tt.err),
 				amount:    5_000,
 			}
-			service := usecase.NewService(provider, repository)
+			service := usecase.NewService(provider, repository, nil)
 
 			amount, err := service.ReserveCashback(ctx, "order-1", reservationInput())
 			if amount != 0 || !errors.Is(err, tt.err) {
@@ -140,7 +140,7 @@ func TestReserveCashbackWrappedNotFoundContinuesCreation(t *testing.T) {
 		lookupErr: fmt.Errorf("lookup order: %w", domain.ErrReservationNotFound),
 		amount:    2_000,
 	}
-	service := usecase.NewService(provider, repository)
+	service := usecase.NewService(provider, repository, nil)
 
 	amount, err := service.ReserveCashback(ctx, "order-1", reservationInput())
 	if err != nil || amount != 2_000 {

@@ -125,7 +125,7 @@ func TestCalculateWithMatchingRule(t *testing.T) {
 			},
 		},
 	}
-	service := usecase.NewService(provider, nil)
+	service := usecase.NewService(provider, nil, nil)
 	input := usecase.CalculateInput{
 		UserID:            "user-1",
 		ShopID:            "shop-42",

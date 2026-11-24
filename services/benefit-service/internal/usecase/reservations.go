@@ -16,7 +16,7 @@ var (
 )
 
 func (s *Service) ReserveCashback(ctx context.Context, orderID string, input CalculateInput) (int64, error) {
-	if err := validate(orderID, input); err != nil {
+	if err := validate(orderID, input.UserID); err != nil {
 		return 0, fmt.Errorf("validate get reserv: %w", err)
 	}
 	reservCashback, err := s.cashbackReserver.GetReservByOrderID(ctx, orderID)
@@ -46,11 +46,11 @@ func (s *Service) ReserveCashback(ctx context.Context, orderID string, input Cal
 	return amount, nil
 }
 
-func validate(orderID string, input CalculateInput) error {
+func validate(orderID string, userID string) error {
 	if strings.TrimSpace(orderID) == "" {
 		return ErrOrderIDEmpty
 	}
-	if strings.TrimSpace(input.UserID) == "" {
+	if strings.TrimSpace(userID) == "" {
 		return ErrUserIDEmpty
 	}
 	return nil

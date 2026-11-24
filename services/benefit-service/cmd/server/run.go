@@ -152,7 +152,7 @@ func run(ctx context.Context, configPath string) error {
 		}
 	}()
 
-	service := usecase.NewService(provider, repo)
+	service := usecase.NewService(provider, repo, repo)
 	gRPCBenefitHandler := benefit.NewHandler(service, service)
 	gRPCServer := server.NewGRPCServer(
 		cfg.GRPC.Addr,
