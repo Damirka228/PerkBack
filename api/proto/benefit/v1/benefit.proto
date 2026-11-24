@@ -6,6 +6,7 @@ option go_package = "github.com/Damirka228/PerkBack/gen/go/benefit/v1;benefitv1"
 
 service BenefitService {
   rpc CalculateBenefit(CalculateBenefitRequest) returns (CalculateBenefitResponse);
+  rpc ReserveCashback(ReserveCashbackRequest) returns (ReserveCashbackResponse);
 }
 
 message CalculateBenefitRequest {
@@ -20,4 +21,16 @@ message CalculateBenefitResponse {
   int64 payable_kopecks = 2;
   int64 cashback_kopecks = 3;
   int64 purchase_amount_kopecks = 4;
+}
+
+message ReserveCashbackRequest {
+  string order_id = 1;
+  string user_id = 2;
+  string shop_id = 3;
+  string category_id = 4;
+  int64 purchase_amount_kopecks = 5;
+}
+
+message ReserveCashbackResponse {
+  int64 reserved_cashback_kopecks = 1;
 }
