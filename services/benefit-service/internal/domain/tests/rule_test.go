@@ -1,9 +1,13 @@
-package domain
+package domain_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/Damirka228/PerkBack/services/benefit-service/internal/domain"
+)
 
 func TestRulePromotionMatchesRule(t *testing.T) {
-	rule := RulePromotion{
+	rule := domain.RulePromotion{
 		ShopID:               "shop-42",
 		CategoryID:           "groceries",
 		MinPurchaseAmountKop: 100_000,

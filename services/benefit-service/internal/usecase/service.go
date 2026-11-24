@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/domain"
 )
@@ -11,13 +12,22 @@ type OptionsProvider interface {
 	GetOptions(ctx context.Context, input CalculateInput) ([]BestVariant, error)
 }
 
-type Service struct {
-	optionsProvider OptionsProvider
+type CashbackReserver interface {
+	ReserveCashback(ctx context.Context, orderID, userID string, periodStart time.Time, requestedKopecks int64) (int64, error)
+	GetReservByOrderID(ctx context.Context, orderID string) (domain.CashbackReservation, error)
 }
 
-func NewService(optionsProvider OptionsProvider) *Service {
+type Service struct {
+	optionsProvider  OptionsProvider
+	cashbackReserver CashbackReserver
+	timeNow          func() time.Time
+}
+
+func NewService(optionsProvider OptionsProvider, cashbackReserver CashbackReserver) *Service {
 	return &Service{
-		optionsProvider: optionsProvider,
+		optionsProvider:  optionsProvider,
+		cashbackReserver: cashbackReserver,
+		timeNow:          time.Now,
 	}
 }
 

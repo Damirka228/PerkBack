@@ -1,9 +1,11 @@
-package domain
+package domain_test
 
 import (
 	"errors"
 	"math"
 	"testing"
+
+	"github.com/Damirka228/PerkBack/services/benefit-service/internal/domain"
 )
 
 func TestCalculateCashback(t *testing.T) {
@@ -81,34 +83,34 @@ func TestCalculateCashback(t *testing.T) {
 			payableKopecks: -1,
 			rateBPS:        300,
 			want:           0,
-			wantErr:        ErrInvalidAmount,
+			wantErr:        domain.ErrInvalidAmount,
 		},
 		{
 			name:           "negative_rate",
 			payableKopecks: 100_000,
 			rateBPS:        -1,
 			want:           0,
-			wantErr:        ErrInvalidRate,
+			wantErr:        domain.ErrInvalidRate,
 		},
 		{
 			name:           "rate_above_one_hundred_percent",
 			payableKopecks: 100_000,
 			rateBPS:        10_001,
 			want:           0,
-			wantErr:        ErrInvalidRate,
+			wantErr:        domain.ErrInvalidRate,
 		},
 		{
 			name:           "zero_amount_does_not_allow_invalid_rate",
 			payableKopecks: 0,
 			rateBPS:        -1,
 			want:           0,
-			wantErr:        ErrInvalidRate,
+			wantErr:        domain.ErrInvalidRate,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := CalculateCashback(tc.payableKopecks, tc.rateBPS)
+			got, err := domain.CalculateCashback(tc.payableKopecks, tc.rateBPS)
 			if !errors.Is(err, tc.wantErr) {
 				t.Fatalf("CalculateCashback(%d, %d) error = %v, want %v",
 					tc.payableKopecks, tc.rateBPS, err, tc.wantErr)
@@ -127,7 +129,7 @@ func TestCalculateOptions(t *testing.T) {
 		purchaseAmountKop int64
 		discountKop       int64
 		rateBPS           int64
-		want              OptionResult
+		want              domain.OptionResult
 		wantErr           error
 	}{
 		{
@@ -135,7 +137,7 @@ func TestCalculateOptions(t *testing.T) {
 			purchaseAmountKop: 100_000,
 			discountKop:       7_000,
 			rateBPS:           300,
-			want: OptionResult{
+			want: domain.OptionResult{
 				DiscountKop: 7_000,
 				PayableKop:  93_000,
 				CashbackKop: 2_790,
@@ -145,7 +147,7 @@ func TestCalculateOptions(t *testing.T) {
 			name:              "no_discount",
 			purchaseAmountKop: 100_000,
 			rateBPS:           300,
-			want: OptionResult{
+			want: domain.OptionResult{
 				PayableKop:  100_000,
 				CashbackKop: 3_000,
 			},
@@ -155,47 +157,47 @@ func TestCalculateOptions(t *testing.T) {
 			purchaseAmountKop: 100_000,
 			discountKop:       100_000,
 			rateBPS:           300,
-			want: OptionResult{
+			want: domain.OptionResult{
 				DiscountKop: 100_000,
 			},
 		},
 		{
 			name:    "zero_purchase_and_discount",
 			rateBPS: 300,
-			want:    OptionResult{},
+			want:    domain.OptionResult{},
 		},
 		{
 			name:              "negative_purchase_amount",
 			purchaseAmountKop: -1,
 			rateBPS:           300,
-			wantErr:           ErrInvalidAmount,
+			wantErr:           domain.ErrInvalidAmount,
 		},
 		{
 			name:              "negative_discount",
 			purchaseAmountKop: 100_000,
 			discountKop:       -1,
 			rateBPS:           300,
-			wantErr:           ErrInvalidDiscount,
+			wantErr:           domain.ErrInvalidDiscount,
 		},
 		{
 			name:              "discount_above_purchase_amount",
 			purchaseAmountKop: 100_000,
 			discountKop:       100_001,
 			rateBPS:           300,
-			wantErr:           ErrInvalidDiscount,
+			wantErr:           domain.ErrInvalidDiscount,
 		},
 		{
 			name:              "invalid_cashback_rate",
 			purchaseAmountKop: 100_000,
 			discountKop:       7_000,
 			rateBPS:           10_001,
-			wantErr:           ErrInvalidRate,
+			wantErr:           domain.ErrInvalidRate,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := CalculateOptions(tc.purchaseAmountKop, tc.discountKop, tc.rateBPS)
+			got, err := domain.CalculateOptions(tc.purchaseAmountKop, tc.discountKop, tc.rateBPS)
 			if !errors.Is(err, tc.wantErr) {
 				t.Fatalf("CalculateOptions(%d, %d, %d) error = %v, want %v",
 					tc.purchaseAmountKop, tc.discountKop, tc.rateBPS, err, tc.wantErr)
