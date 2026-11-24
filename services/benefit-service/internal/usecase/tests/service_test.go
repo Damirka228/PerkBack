@@ -128,7 +128,7 @@ func TestCalculateSuccess(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			provider := &optionsProviderTest{variants: tc.variants}
-			service := usecase.NewService(provider)
+			service := usecase.NewService(provider, nil)
 
 			ctx := t.Context()
 			input := usecase.CalculateInput{
@@ -229,7 +229,7 @@ func TestCalculateErrors(t *testing.T) {
 				variants: tc.variants,
 				err:      tc.providerErr,
 			}
-			service := usecase.NewService(provider)
+			service := usecase.NewService(provider, nil)
 
 			result, err := service.Calculate(t.Context(), usecase.CalculateInput{
 				PurchaseAmountKop: tc.amount,
@@ -260,7 +260,7 @@ func TestCalculateEmptyOptions(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			provider := &optionsProviderTest{variants: tc.variants}
-			service := usecase.NewService(provider)
+			service := usecase.NewService(provider, nil)
 
 			result, err := service.Calculate(t.Context(), usecase.CalculateInput{
 				PurchaseAmountKop: 100_000,

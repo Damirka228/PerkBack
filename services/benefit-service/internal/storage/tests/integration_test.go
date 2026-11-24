@@ -24,7 +24,9 @@ import (
 // that schema, leaving application tables and migration versions untouched.
 type storageFixture struct {
 	*storagepkg.Storage
-	pool *pgxpool.Pool // Independent connection for setup and committed-state assertions.
+	pool  *pgxpool.Pool // Independent connection for setup and committed-state assertions.
+	admin *pgxpool.Pool
+	dsn   string
 }
 
 func newIntegrationStorage(t *testing.T) *storageFixture {
@@ -85,7 +87,7 @@ func newIntegrationStorage(t *testing.T) *storageFixture {
 		t.Fatalf("initialize isolated storage: %v", err)
 	}
 	t.Cleanup(client.Close)
-	return &storageFixture{Storage: client, pool: pool}
+	return &storageFixture{Storage: client, pool: pool, admin: admin, dsn: scopedDSN}
 }
 
 func isolatedStorageDSN(t *testing.T, dsn, schema string) string {

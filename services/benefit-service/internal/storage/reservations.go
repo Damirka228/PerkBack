@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Damirka228/PerkBack/services/benefit-service/internal/domain"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -25,6 +26,24 @@ type cashbackReservation struct {
 	periodStart   time.Time
 	amountKopecks int64
 	status        string
+}
+
+func (s *Storage) GetReservByOrderID(ctx context.Context, orderID string) (domain.CashbackReservation, error) {
+	var result domain.CashbackReservation
+	sqlQuery := `
+		SELECT user_id, period_start, amount_kopecks, status
+		FROM cashback_reservations
+		WHERE order_id = $1
+	`
+	row := s.pool.QueryRow(ctx, sqlQuery, orderID)
+	err := row.Scan(&result.UserID, &result.PeriodStart, &result.AmountKop, &result.Status)
+	switch {
+	case errors.Is(err, pgx.ErrNoRows):
+		return domain.CashbackReservation{}, domain.ErrReservationNotFound
+	case err != nil:
+		return domain.CashbackReservation{}, fmt.Errorf("cashback reserv bd: %w", err)
+	}
+	return result, nil
 }
 
 func (s *Storage) ReserveCashback(ctx context.Context, orderID, userID string, periodStart time.Time, requestedKopecks int64) (int64, error) {
