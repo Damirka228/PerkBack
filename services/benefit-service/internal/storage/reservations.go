@@ -13,9 +13,7 @@ import (
 var (
 	ErrOrderConflict   = errors.New("order belongs to another user or period")
 	ErrNegativeKopecks = errors.New("requested cashback must be non-negative")
-	ErrStatusCancel    = errors.New("order status is canceled error pay")
 	ErrUnknownStatus   = errors.New("unknow status is cashback reservation")
-	ErrCanceledOrder   = errors.New("order are credited error canceled")
 )
 
 type monthlyLimit struct {
@@ -61,7 +59,7 @@ func (s *Storage) ConfirmCashback(ctx context.Context, orderID, userID string) (
 			confirmedAmount = reservation.AmountKop
 			return nil
 		case reservation.Status == "canceled":
-			return ErrStatusCancel
+			return domain.ErrStatusCancel
 		case reservation.Status == "reserved":
 		default:
 			return ErrUnknownStatus
@@ -91,7 +89,7 @@ func (s *Storage) CancelCashback(ctx context.Context, orderId, userId string) er
 		case reservation.Status == "canceled":
 			return nil
 		case reservation.Status == "credited":
-			return ErrCanceledOrder
+			return domain.ErrCanceledOrder
 		case reservation.Status == "reserved":
 		default:
 			return ErrUnknownStatus
