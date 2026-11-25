@@ -46,7 +46,7 @@ func TestReserveCashbackErrors(t *testing.T) {
 						err = fmt.Errorf("usecase operation: %w", err)
 					}
 					return 2_000, err
-				}))
+				}), nil)
 				response, err := handler.ReserveCashback(t.Context(), &benefitv1.ReserveCashbackRequest{
 					OrderId: "order-1", UserId: "user-1", PurchaseAmountKopecks: 100_000,
 				})
@@ -79,7 +79,7 @@ func TestReserveCashbackMapsRequestAndActualAmount(t *testing.T) {
 						want, orderID, input)
 				}
 				return amount, nil
-			}))
+			}), nil)
 			response, err := handler.ReserveCashback(ctx, &benefitv1.ReserveCashbackRequest{
 				OrderId: "order-1", UserId: "user-1", ShopId: "shop-42",
 				CategoryId: "groceries", PurchaseAmountKopecks: 100_000,
@@ -102,7 +102,7 @@ func TestReserveCashbackNilRequestUsesGetters(t *testing.T) {
 			t.Errorf("nil request produced order=%q and input=%+v, want zero values", orderID, input)
 		}
 		return 0, usecase.ErrOrderIDEmpty
-	}))
+	}), nil)
 	response, err := handler.ReserveCashback(t.Context(), nil)
 	if response != nil || status.Code(err) != codes.InvalidArgument || calls != 1 {
 		t.Fatalf("nil request: response=%v, error=%v, calls=%d; want nil, InvalidArgument, 1", response, err, calls)

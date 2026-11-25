@@ -21,6 +21,8 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	BenefitService_CalculateBenefit_FullMethodName = "/benefit.v1.BenefitService/CalculateBenefit"
 	BenefitService_ReserveCashback_FullMethodName  = "/benefit.v1.BenefitService/ReserveCashback"
+	BenefitService_ConfirmCashback_FullMethodName  = "/benefit.v1.BenefitService/ConfirmCashback"
+	BenefitService_CancelCashback_FullMethodName   = "/benefit.v1.BenefitService/CancelCashback"
 )
 
 // BenefitServiceClient is the client API for BenefitService service.
@@ -29,6 +31,8 @@ const (
 type BenefitServiceClient interface {
 	CalculateBenefit(ctx context.Context, in *CalculateBenefitRequest, opts ...grpc.CallOption) (*CalculateBenefitResponse, error)
 	ReserveCashback(ctx context.Context, in *ReserveCashbackRequest, opts ...grpc.CallOption) (*ReserveCashbackResponse, error)
+	ConfirmCashback(ctx context.Context, in *ConfirmCashbackRequest, opts ...grpc.CallOption) (*ConfirmCashbackResponse, error)
+	CancelCashback(ctx context.Context, in *CancelCashbackRequest, opts ...grpc.CallOption) (*CancelCashbackResponse, error)
 }
 
 type benefitServiceClient struct {
@@ -59,12 +63,34 @@ func (c *benefitServiceClient) ReserveCashback(ctx context.Context, in *ReserveC
 	return out, nil
 }
 
+func (c *benefitServiceClient) ConfirmCashback(ctx context.Context, in *ConfirmCashbackRequest, opts ...grpc.CallOption) (*ConfirmCashbackResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ConfirmCashbackResponse)
+	err := c.cc.Invoke(ctx, BenefitService_ConfirmCashback_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *benefitServiceClient) CancelCashback(ctx context.Context, in *CancelCashbackRequest, opts ...grpc.CallOption) (*CancelCashbackResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelCashbackResponse)
+	err := c.cc.Invoke(ctx, BenefitService_CancelCashback_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BenefitServiceServer is the server API for BenefitService service.
 // All implementations must embed UnimplementedBenefitServiceServer
 // for forward compatibility.
 type BenefitServiceServer interface {
 	CalculateBenefit(context.Context, *CalculateBenefitRequest) (*CalculateBenefitResponse, error)
 	ReserveCashback(context.Context, *ReserveCashbackRequest) (*ReserveCashbackResponse, error)
+	ConfirmCashback(context.Context, *ConfirmCashbackRequest) (*ConfirmCashbackResponse, error)
+	CancelCashback(context.Context, *CancelCashbackRequest) (*CancelCashbackResponse, error)
 	mustEmbedUnimplementedBenefitServiceServer()
 }
 
@@ -80,6 +106,12 @@ func (UnimplementedBenefitServiceServer) CalculateBenefit(context.Context, *Calc
 }
 func (UnimplementedBenefitServiceServer) ReserveCashback(context.Context, *ReserveCashbackRequest) (*ReserveCashbackResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ReserveCashback not implemented")
+}
+func (UnimplementedBenefitServiceServer) ConfirmCashback(context.Context, *ConfirmCashbackRequest) (*ConfirmCashbackResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ConfirmCashback not implemented")
+}
+func (UnimplementedBenefitServiceServer) CancelCashback(context.Context, *CancelCashbackRequest) (*CancelCashbackResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelCashback not implemented")
 }
 func (UnimplementedBenefitServiceServer) mustEmbedUnimplementedBenefitServiceServer() {}
 func (UnimplementedBenefitServiceServer) testEmbeddedByValue()                        {}
@@ -138,6 +170,42 @@ func _BenefitService_ReserveCashback_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BenefitService_ConfirmCashback_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConfirmCashbackRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BenefitServiceServer).ConfirmCashback(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BenefitService_ConfirmCashback_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BenefitServiceServer).ConfirmCashback(ctx, req.(*ConfirmCashbackRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BenefitService_CancelCashback_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelCashbackRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BenefitServiceServer).CancelCashback(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BenefitService_CancelCashback_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BenefitServiceServer).CancelCashback(ctx, req.(*CancelCashbackRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BenefitService_ServiceDesc is the grpc.ServiceDesc for BenefitService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +220,14 @@ var BenefitService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReserveCashback",
 			Handler:    _BenefitService_ReserveCashback_Handler,
+		},
+		{
+			MethodName: "ConfirmCashback",
+			Handler:    _BenefitService_ConfirmCashback_Handler,
+		},
+		{
+			MethodName: "CancelCashback",
+			Handler:    _BenefitService_CancelCashback_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/domain"
-	"github.com/Damirka228/PerkBack/services/benefit-service/internal/storage"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -55,7 +54,7 @@ func TestCashbackSettlementIsIdempotentIntegration(t *testing.T) {
 			}
 			assertReservationState(t, fixture, []monthlyLimitRow{limit}, orders)
 		}
-		if err := fixture.CancelCashback(ctx, settlementOrder, settlementUser); !errors.Is(err, storage.ErrCanceledOrder) {
+		if err := fixture.CancelCashback(ctx, settlementOrder, settlementUser); !errors.Is(err, domain.ErrCanceledOrder) {
 			t.Fatalf("cancel credited reservation: %v, want ErrCanceledOrder", err)
 		}
 		assertReservationState(t, fixture, []monthlyLimitRow{limit}, orders)
@@ -74,7 +73,7 @@ func TestCashbackSettlementIsIdempotentIntegration(t *testing.T) {
 			}
 			assertReservationState(t, fixture, []monthlyLimitRow{limit}, orders)
 		}
-		if amount, err := fixture.ConfirmCashback(ctx, settlementOrder, settlementUser); amount != 0 || !errors.Is(err, storage.ErrStatusCancel) {
+		if amount, err := fixture.ConfirmCashback(ctx, settlementOrder, settlementUser); amount != 0 || !errors.Is(err, domain.ErrStatusCancel) {
 			t.Fatalf("confirm canceled reservation = (%d, %v), want (0, ErrStatusCancel)", amount, err)
 		}
 		assertReservationState(t, fixture, []monthlyLimitRow{limit}, orders)
@@ -200,10 +199,10 @@ func TestCashbackConfirmAndCancelCompeteForSameOrderIntegration(t *testing.T) {
 
 	limit.Reserved = 1_000
 	switch {
-	case confirmResult.err == nil && confirmResult.amount == settlementAmount && errors.Is(cancelErr, storage.ErrCanceledOrder):
+	case confirmResult.err == nil && confirmResult.amount == settlementAmount && errors.Is(cancelErr, domain.ErrCanceledOrder):
 		limit.Credited = 99_000
 		orders[0].Status = "credited"
-	case cancelErr == nil && confirmResult.amount == 0 && errors.Is(confirmResult.err, storage.ErrStatusCancel):
+	case cancelErr == nil && confirmResult.amount == 0 && errors.Is(confirmResult.err, domain.ErrStatusCancel):
 		orders[0].Status = "canceled"
 	default:
 		t.Fatalf("expected exactly one valid transition; confirm = (%d, %v), cancel = %v",

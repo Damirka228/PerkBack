@@ -277,6 +277,190 @@ func (x *ReserveCashbackResponse) GetReservedCashbackKopecks() int64 {
 	return 0
 }
 
+type ConfirmCashbackRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ConfirmCashbackRequest) Reset() {
+	*x = ConfirmCashbackRequest{}
+	mi := &file_benefit_v1_benefit_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ConfirmCashbackRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConfirmCashbackRequest) ProtoMessage() {}
+
+func (x *ConfirmCashbackRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_benefit_v1_benefit_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConfirmCashbackRequest.ProtoReflect.Descriptor instead.
+func (*ConfirmCashbackRequest) Descriptor() ([]byte, []int) {
+	return file_benefit_v1_benefit_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ConfirmCashbackRequest) GetOrderId() string {
+	if x != nil {
+		return x.OrderId
+	}
+	return ""
+}
+
+func (x *ConfirmCashbackRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type ConfirmCashbackResponse struct {
+	state                   protoimpl.MessageState `protogen:"open.v1"`
+	CreditedCashbackKopecks int64                  `protobuf:"varint,1,opt,name=credited_cashback_kopecks,json=creditedCashbackKopecks,proto3" json:"credited_cashback_kopecks,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
+}
+
+func (x *ConfirmCashbackResponse) Reset() {
+	*x = ConfirmCashbackResponse{}
+	mi := &file_benefit_v1_benefit_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ConfirmCashbackResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConfirmCashbackResponse) ProtoMessage() {}
+
+func (x *ConfirmCashbackResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_benefit_v1_benefit_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConfirmCashbackResponse.ProtoReflect.Descriptor instead.
+func (*ConfirmCashbackResponse) Descriptor() ([]byte, []int) {
+	return file_benefit_v1_benefit_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ConfirmCashbackResponse) GetCreditedCashbackKopecks() int64 {
+	if x != nil {
+		return x.CreditedCashbackKopecks
+	}
+	return 0
+}
+
+type CancelCashbackRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelCashbackRequest) Reset() {
+	*x = CancelCashbackRequest{}
+	mi := &file_benefit_v1_benefit_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelCashbackRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelCashbackRequest) ProtoMessage() {}
+
+func (x *CancelCashbackRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_benefit_v1_benefit_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelCashbackRequest.ProtoReflect.Descriptor instead.
+func (*CancelCashbackRequest) Descriptor() ([]byte, []int) {
+	return file_benefit_v1_benefit_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *CancelCashbackRequest) GetOrderId() string {
+	if x != nil {
+		return x.OrderId
+	}
+	return ""
+}
+
+func (x *CancelCashbackRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type CancelCashbackResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelCashbackResponse) Reset() {
+	*x = CancelCashbackResponse{}
+	mi := &file_benefit_v1_benefit_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelCashbackResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelCashbackResponse) ProtoMessage() {}
+
+func (x *CancelCashbackResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_benefit_v1_benefit_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelCashbackResponse.ProtoReflect.Descriptor instead.
+func (*CancelCashbackResponse) Descriptor() ([]byte, []int) {
+	return file_benefit_v1_benefit_proto_rawDescGZIP(), []int{7}
+}
+
 var File_benefit_v1_benefit_proto protoreflect.FileDescriptor
 
 const file_benefit_v1_benefit_proto_rawDesc = "" +
@@ -302,10 +486,21 @@ const file_benefit_v1_benefit_proto_rawDesc = "" +
 	"categoryId\x126\n" +
 	"\x17purchase_amount_kopecks\x18\x05 \x01(\x03R\x15purchaseAmountKopecks\"U\n" +
 	"\x17ReserveCashbackResponse\x12:\n" +
-	"\x19reserved_cashback_kopecks\x18\x01 \x01(\x03R\x17reservedCashbackKopecks2\xcb\x01\n" +
+	"\x19reserved_cashback_kopecks\x18\x01 \x01(\x03R\x17reservedCashbackKopecks\"L\n" +
+	"\x16ConfirmCashbackRequest\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"U\n" +
+	"\x17ConfirmCashbackResponse\x12:\n" +
+	"\x19credited_cashback_kopecks\x18\x01 \x01(\x03R\x17creditedCashbackKopecks\"K\n" +
+	"\x15CancelCashbackRequest\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"\x18\n" +
+	"\x16CancelCashbackResponse2\x80\x03\n" +
 	"\x0eBenefitService\x12]\n" +
 	"\x10CalculateBenefit\x12#.benefit.v1.CalculateBenefitRequest\x1a$.benefit.v1.CalculateBenefitResponse\x12Z\n" +
-	"\x0fReserveCashback\x12\".benefit.v1.ReserveCashbackRequest\x1a#.benefit.v1.ReserveCashbackResponseB<Z:github.com/Damirka228/PerkBack/gen/go/benefit/v1;benefitv1b\x06proto3"
+	"\x0fReserveCashback\x12\".benefit.v1.ReserveCashbackRequest\x1a#.benefit.v1.ReserveCashbackResponse\x12Z\n" +
+	"\x0fConfirmCashback\x12\".benefit.v1.ConfirmCashbackRequest\x1a#.benefit.v1.ConfirmCashbackResponse\x12W\n" +
+	"\x0eCancelCashback\x12!.benefit.v1.CancelCashbackRequest\x1a\".benefit.v1.CancelCashbackResponseB<Z:github.com/Damirka228/PerkBack/gen/go/benefit/v1;benefitv1b\x06proto3"
 
 var (
 	file_benefit_v1_benefit_proto_rawDescOnce sync.Once
@@ -319,20 +514,28 @@ func file_benefit_v1_benefit_proto_rawDescGZIP() []byte {
 	return file_benefit_v1_benefit_proto_rawDescData
 }
 
-var file_benefit_v1_benefit_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_benefit_v1_benefit_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_benefit_v1_benefit_proto_goTypes = []any{
 	(*CalculateBenefitRequest)(nil),  // 0: benefit.v1.CalculateBenefitRequest
 	(*CalculateBenefitResponse)(nil), // 1: benefit.v1.CalculateBenefitResponse
 	(*ReserveCashbackRequest)(nil),   // 2: benefit.v1.ReserveCashbackRequest
 	(*ReserveCashbackResponse)(nil),  // 3: benefit.v1.ReserveCashbackResponse
+	(*ConfirmCashbackRequest)(nil),   // 4: benefit.v1.ConfirmCashbackRequest
+	(*ConfirmCashbackResponse)(nil),  // 5: benefit.v1.ConfirmCashbackResponse
+	(*CancelCashbackRequest)(nil),    // 6: benefit.v1.CancelCashbackRequest
+	(*CancelCashbackResponse)(nil),   // 7: benefit.v1.CancelCashbackResponse
 }
 var file_benefit_v1_benefit_proto_depIdxs = []int32{
 	0, // 0: benefit.v1.BenefitService.CalculateBenefit:input_type -> benefit.v1.CalculateBenefitRequest
 	2, // 1: benefit.v1.BenefitService.ReserveCashback:input_type -> benefit.v1.ReserveCashbackRequest
-	1, // 2: benefit.v1.BenefitService.CalculateBenefit:output_type -> benefit.v1.CalculateBenefitResponse
-	3, // 3: benefit.v1.BenefitService.ReserveCashback:output_type -> benefit.v1.ReserveCashbackResponse
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	4, // 2: benefit.v1.BenefitService.ConfirmCashback:input_type -> benefit.v1.ConfirmCashbackRequest
+	6, // 3: benefit.v1.BenefitService.CancelCashback:input_type -> benefit.v1.CancelCashbackRequest
+	1, // 4: benefit.v1.BenefitService.CalculateBenefit:output_type -> benefit.v1.CalculateBenefitResponse
+	3, // 5: benefit.v1.BenefitService.ReserveCashback:output_type -> benefit.v1.ReserveCashbackResponse
+	5, // 6: benefit.v1.BenefitService.ConfirmCashback:output_type -> benefit.v1.ConfirmCashbackResponse
+	7, // 7: benefit.v1.BenefitService.CancelCashback:output_type -> benefit.v1.CancelCashbackResponse
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -349,7 +552,7 @@ func file_benefit_v1_benefit_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_benefit_v1_benefit_proto_rawDesc), len(file_benefit_v1_benefit_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
