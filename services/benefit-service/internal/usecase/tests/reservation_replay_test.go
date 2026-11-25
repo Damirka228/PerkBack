@@ -12,7 +12,7 @@ import (
 )
 
 func TestReserveCashbackExistingReservationSkipsCalculationAndCreation(t *testing.T) {
-	for _, status := range []string{"reserved", "credited", "canceled"} {
+	for _, status := range []string{"reserved", "credited"} {
 		for _, amount := range []int64{0, 2_000} {
 			t.Run(fmt.Sprintf("%s/amount_%d", status, amount), func(t *testing.T) {
 				ctx := t.Context()
@@ -47,6 +47,51 @@ func TestReserveCashbackExistingReservationSkipsCalculationAndCreation(t *testin
 				}
 			})
 		}
+	}
+}
+
+func TestReserveCashbackCanceledReservationRejectsReplay(t *testing.T) {
+	tests := []struct {
+		name    string
+		amount  int64
+		ownerID string
+		wantErr error
+	}{
+		{name: "zero_amount", ownerID: "user-1", wantErr: domain.ErrReservationCanceled},
+		{name: "positive_amount", amount: 2_000, ownerID: "user-1", wantErr: domain.ErrReservationCanceled},
+		{name: "another_user", amount: 2_000, ownerID: "another-user", wantErr: domain.ErrNotUserID},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := t.Context()
+			input := reservationInput()
+			existing := domain.CashbackReservation{
+				UserID:      tt.ownerID,
+				PeriodStart: time.Date(2026, time.November, 1, 0, 0, 0, 0, time.UTC),
+				AmountKop:   tt.amount,
+				Status:      "canceled",
+			}
+			repository := &fakeCashbackReserver{
+				existing: &existing,
+				err:      errors.New("must not create another reservation"),
+			}
+			provider := &optionsProviderTest{err: errors.New("must not recalculate canceled order")}
+			service := usecase.NewService(provider, repository, nil)
+			before := *repository.existing
+
+			got, err := service.ReserveCashback(ctx, "order-1", input)
+			if got != 0 || !errors.Is(err, tt.wantErr) {
+				t.Errorf("ReserveCashback() = (%d, %v), want (0, %v)", got, err, tt.wantErr)
+			}
+			assertReservationLookup(t, repository, ctx, "order-1")
+			if provider.calls != 0 || len(repository.calls) != 0 {
+				t.Errorf("canceled replay calculated or created a reservation: calculations=%d, reservations=%d",
+					provider.calls, len(repository.calls))
+			}
+			if *repository.existing != before {
+				t.Error("replay changed the saved reservation")
+			}
+		})
 	}
 }
 

@@ -22,10 +22,13 @@ func (s *Service) ReserveCashback(ctx context.Context, orderID string, input Cal
 	reservCashback, err := s.cashbackReserver.GetReservByOrderID(ctx, orderID)
 	switch {
 	case err == nil:
-		if input.UserID == reservCashback.UserID {
-			return reservCashback.AmountKop, nil
+		if input.UserID != reservCashback.UserID {
+			return 0, domain.ErrNotUserID
 		}
-		return 0, domain.ErrNotUserID
+		if reservCashback.Status == "canceled" {
+			return 0, domain.ErrReservationCanceled
+		}
+		return reservCashback.AmountKop, nil
 	case errors.Is(err, domain.ErrReservationNotFound):
 	default:
 		return 0, fmt.Errorf("reserv cashback error: %w", err)

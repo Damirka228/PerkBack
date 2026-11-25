@@ -31,6 +31,7 @@ func TestReserveCashbackErrors(t *testing.T) {
 		{"empty_user", usecase.ErrUserIDEmpty, codes.InvalidArgument, "user id is required"},
 		{"negative_purchase", domain.ErrInvalidAmount, codes.InvalidArgument, "purchase amount must be non-negative"},
 		{"foreign_order", domain.ErrNotUserID, codes.PermissionDenied, "order belongs to another user"},
+		{"canceled_reservation", domain.ErrReservationCanceled, codes.FailedPrecondition, "cannot reserve cashback for a canceled order"},
 		{"canceled", context.Canceled, codes.Canceled, "request canceled"},
 		{"deadline", context.DeadlineExceeded, codes.DeadlineExceeded, "request deadline exceeded"},
 		{"unexpected", errors.New("private database details"), codes.Internal, "failed to reserve cashback"},

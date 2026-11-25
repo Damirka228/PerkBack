@@ -133,6 +133,10 @@ func (s *Storage) ReserveCashback(ctx context.Context, orderID, userID string, p
 				return ErrOrderConflict
 			}
 
+			if existing.status == "canceled" {
+				return domain.ErrReservationCanceled
+			}
+
 			amount = existing.amountKopecks
 			return nil
 
