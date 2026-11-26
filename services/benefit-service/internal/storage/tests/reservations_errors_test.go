@@ -2,8 +2,11 @@ package storage_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
+	"time"
 
+	"github.com/Damirka228/PerkBack/services/benefit-service/internal/domain"
 	storagepkg "github.com/Damirka228/PerkBack/services/benefit-service/internal/storage"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -174,4 +177,31 @@ func TestReserveCashbackCommitErrorIsNotSuccessIntegration(t *testing.T) {
 		[]monthlyLimitRow{{"user-1", "2026-11-01", 100_000, 5_000, 0}},
 		[]reservationRow{{"order-1", "user-1", "2026-11-01", 5_000, "reserved"}},
 	)
+}
+
+func TestReserveCashbackCanceledReservationRejectsReplayIntegration(t *testing.T) {
+	for _, initialAmount := range []int64{0, 5_000} {
+		t.Run(fmt.Sprintf("amount_%d", initialAmount), func(t *testing.T) {
+			fixture := newIntegrationStorage(t)
+			ctx := storageTestContext(t)
+			period := reservationTestPeriod()
+			amount, err := fixture.ReserveCashback(ctx, "order-1", "user-1", period, initialAmount)
+			if err != nil || amount != initialAmount {
+				t.Fatalf("initial ReserveCashback() = (%d, %v), want (%d, nil)", amount, err, initialAmount)
+			}
+			if err := fixture.CancelCashback(ctx, "order-1", "user-1"); err != nil {
+				t.Fatal(err)
+			}
+			for attempt := 0; attempt < 2; attempt++ {
+				amount, err := fixture.ReserveCashback(ctx, "order-1", "user-1", period, 9_000)
+				if amount != 0 || !errors.Is(err, domain.ErrReservationCanceled) {
+					t.Errorf("replay = (%d, %v), want (0, ErrReservationCanceled)", amount, err)
+				}
+			}
+			assertReservationState(t, fixture,
+				[]monthlyLimitRow{{"user-1", period.Format(time.DateOnly), 100_000, 0, 0}},
+				[]reservationRow{{"order-1", "user-1", period.Format(time.DateOnly), initialAmount, "canceled"}},
+			)
+		})
+	}
 }

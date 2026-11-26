@@ -37,6 +37,9 @@ func reservError(err error) error {
 	if errors.Is(err, domain.ErrNotUserID) {
 		return status.Error(codes.PermissionDenied, "order belongs to another user")
 	}
+	if errors.Is(err, domain.ErrReservationCanceled) {
+		return status.Error(codes.FailedPrecondition, "cannot reserve cashback for a canceled order")
+	}
 	if errors.Is(err, context.Canceled) {
 		return status.Error(codes.Canceled, "request canceled")
 	}
