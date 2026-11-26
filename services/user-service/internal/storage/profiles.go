@@ -2,9 +2,11 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Damirka228/PerkBack/services/user-service/internal/domain"
+	"github.com/jackc/pgx/v5"
 )
 
 func (s *Storage) SaveProfile(ctx context.Context, profile domain.Profile) error {
@@ -18,4 +20,25 @@ func (s *Storage) SaveProfile(ctx context.Context, profile domain.Profile) error
 		return fmt.Errorf("save profile: %w", err)
 	}
 	return nil
+}
+
+func (s *Storage) GetProfile(ctx context.Context, userID string) (domain.Profile, error) {
+	const sqlQuery = `
+		SELECT selected_category_ids
+		FROM user_profiles
+		WHERE user_id = $1
+	`
+	var category []string
+	row := s.pool.QueryRow(ctx, sqlQuery, userID)
+	err := row.Scan(&category)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return domain.Profile{}, domain.ErrProfileNotFound
+	}
+	if err != nil {
+		return domain.Profile{}, fmt.Errorf("scan profile: %w", err)
+	}
+	return domain.Profile{
+		UserID:              userID,
+		SelectedCategoryIDs: category,
+	}, nil
 }
