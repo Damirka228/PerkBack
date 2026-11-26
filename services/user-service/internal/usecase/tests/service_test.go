@@ -17,8 +17,21 @@ type saveProfileCall struct {
 }
 
 type fakeProfileRepository struct {
-	calls []saveProfileCall
-	err   error
+	calls    []saveProfileCall
+	err      error
+	getCalls []getProfileCall
+	profile  domain.Profile
+	getErr   error
+}
+
+type getProfileCall struct {
+	ctx    context.Context
+	userID string
+}
+
+func (f *fakeProfileRepository) GetProfile(ctx context.Context, userID string) (domain.Profile, error) {
+	f.getCalls = append(f.getCalls, getProfileCall{ctx, userID})
+	return f.profile, f.getErr
 }
 
 func (f *fakeProfileRepository) SaveProfile(ctx context.Context, profile domain.Profile) error {
@@ -81,8 +94,9 @@ func TestSetSelectedCategoriesRejectsInvalidProfileBeforeSaving(t *testing.T) {
 			if !errors.Is(err, tt.wantErr) {
 				t.Errorf("SetSelectedCategories() = %v, want wrapped %v", err, tt.wantErr)
 			}
-			if len(repository.calls) != 0 {
-				t.Errorf("SaveProfile calls = %d, want 0 for invalid input", len(repository.calls))
+			if len(repository.calls) != 0 || len(repository.getCalls) != 0 {
+				t.Errorf("invalid input called repository: saves=%d, reads=%d, want none",
+					len(repository.calls), len(repository.getCalls))
 			}
 		})
 	}
@@ -139,6 +153,9 @@ func TestSetSelectedCategoriesPassesReplacementRatherThanMergedSelection(t *test
 
 func assertProfileSaved(t *testing.T, repository *fakeProfileRepository, ctx context.Context, want domain.Profile) {
 	t.Helper()
+	if len(repository.getCalls) != 0 {
+		t.Errorf("SetSelectedCategories read the profile %d times, want 0", len(repository.getCalls))
+	}
 	if len(repository.calls) != 1 {
 		t.Fatalf("SaveProfile calls = %d, want 1", len(repository.calls))
 	}
