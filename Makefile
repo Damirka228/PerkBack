@@ -71,3 +71,15 @@ benefit-migrate-down:
 			-database "$${BENEFIT_DATABASE_URL:?BENEFIT_DATABASE_URL is required}" down 1
 
 .PHONY: benefit-migrate-up benefit-migrate-down
+
+user-migrate-up:
+	@. ./.env && \
+		migrate -path services/user-service/migrations \
+			-database "$${USER_DATABASE_URL:?USER_DATABASE_URL is required}" up
+
+user-migrate-down:
+	@. ./.env && \
+		migrate -path services/user-service/migrations \
+			-database "$${USER_DATABASE_URL:?USER_DATABASE_URL is required}" down 1
+
+.PHONY: user-migrate-up user-migrate-down
