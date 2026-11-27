@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package user.v1;
+
+option go_package = "github.com/Damirka228/PerkBack/gen/go/user/v1;userv1";
+
+service UserService {
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  rpc SetSelectedCategories(SetSelectedCategoriesRequest) returns (SetSelectedCategoriesResponse);
+}
+
+message GetProfileRequest {
+  string user_id = 1;
+}
+
+message GetProfileResponse {
+  string user_id = 1;
+  repeated string selected_category_ids = 2;
+}
+
+message SetSelectedCategoriesRequest {
+  string user_id = 1;
+  repeated string selected_category_ids = 2;
+}
+
+message SetSelectedCategoriesResponse {}
