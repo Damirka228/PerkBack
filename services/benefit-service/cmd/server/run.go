@@ -28,50 +28,6 @@ var (
 	ErrRuleIdEmpty = errors.New("err rule id is empty")
 )
 
-type OptionsProvider struct {
-	mu      sync.RWMutex
-	rateBPS int64
-	rules   []domain.RulePromotion
-}
-
-func (p *OptionsProvider) Upsert(rule domain.RulePromotion) error {
-	if rule.ID == "" {
-		return ErrRuleIdEmpty
-	}
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	for i, promo := range p.rules {
-		if promo.ID == rule.ID {
-			p.rules[i] = rule
-			return nil
-		}
-	}
-	p.rules = append(p.rules, rule)
-	sort.Slice(p.rules, func(i, j int) bool {
-		return p.rules[i].ID < p.rules[j].ID
-	})
-
-	return nil
-}
-
-func (p *OptionsProvider) GetOptions(ctx context.Context, input usecase.CalculateInput) ([]usecase.BestVariant, error) {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
-	bestVatiant := []usecase.BestVariant{
-		{DiscountKop: 0, RateBPS: p.rateBPS},
-	}
-	for _, rule := range p.rules {
-		matches := rule.MatchesRule(input.ShopID, input.CategoryID, input.PurchaseAmountKop)
-		if matches == true {
-			bestVatiant = append(bestVatiant, usecase.BestVariant{
-				DiscountKop: rule.DiscountKop,
-				RateBPS:     rule.RateBPS,
-			})
-		}
-	}
-	return bestVatiant, nil
-}
-
 func run(ctx context.Context, configPath string) error {
 	cfg, err := config.Load(configPath)
 	if err != nil {
@@ -211,4 +167,48 @@ func run(ctx context.Context, configPath string) error {
 		return runErr
 	}
 	return shutdownErr
+}
+
+type OptionsProvider struct {
+	mu      sync.RWMutex
+	rateBPS int64
+	rules   []domain.RulePromotion
+}
+
+func (p *OptionsProvider) Upsert(rule domain.RulePromotion) error {
+	if rule.ID == "" {
+		return ErrRuleIdEmpty
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	for i, promo := range p.rules {
+		if promo.ID == rule.ID {
+			p.rules[i] = rule
+			return nil
+		}
+	}
+	p.rules = append(p.rules, rule)
+	sort.Slice(p.rules, func(i, j int) bool {
+		return p.rules[i].ID < p.rules[j].ID
+	})
+
+	return nil
+}
+
+func (p *OptionsProvider) GetOptions(ctx context.Context, input usecase.CalculateInput) ([]usecase.BestVariant, error) {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	bestVatiant := []usecase.BestVariant{
+		{DiscountKop: 0, RateBPS: p.rateBPS},
+	}
+	for _, rule := range p.rules {
+		matches := rule.MatchesRule(input.ShopID, input.CategoryID, input.PurchaseAmountKop)
+		if matches == true {
+			bestVatiant = append(bestVatiant, usecase.BestVariant{
+				DiscountKop: rule.DiscountKop,
+				RateBPS:     rule.RateBPS,
+			})
+		}
+	}
+	return bestVatiant, nil
 }

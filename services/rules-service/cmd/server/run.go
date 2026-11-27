@@ -100,11 +100,7 @@ func run(ctx context.Context, configPath string) error {
 		log.WithError(runErr).Warn("application component stopped")
 	}
 	stop()
-	shutdownErr := server.Shutdown(
-		grpcServer,
-		cfg.ShutdownTimeout,
-		log,
-	)
+	shutdownErr := server.Shutdown(grpcServer, cfg.ShutdownTimeout, log)
 	for received < 2 {
 		runErr = errors.Join(runErr, <-errCh)
 		received++
