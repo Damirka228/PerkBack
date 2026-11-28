@@ -38,6 +38,9 @@ func (s *Service) ReserveCashback(ctx context.Context, orderID string, input Cal
 	if err != nil {
 		return 0, fmt.Errorf("calculate cashback: %w", err)
 	}
+	if resultCashback.PersonalizationStatus == domain.PersonalizationUnavailable {
+		return 0, domain.ErrUserServiceUnavailable
+	}
 
 	now := s.timeNow().UTC()
 	periodStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)

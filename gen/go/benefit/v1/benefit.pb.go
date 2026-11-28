@@ -21,6 +21,58 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type PersonalizationStatus int32
+
+const (
+	PersonalizationStatus_PERSONALIZATION_STATUS_UNSPECIFIED PersonalizationStatus = 0
+	PersonalizationStatus_PERSONALIZATION_STATUS_APPLIED     PersonalizationStatus = 1
+	PersonalizationStatus_PERSONALIZATION_STATUS_NOT_APPLIED PersonalizationStatus = 2
+	PersonalizationStatus_PERSONALIZATION_STATUS_UNAVAILABLE PersonalizationStatus = 3
+)
+
+// Enum value maps for PersonalizationStatus.
+var (
+	PersonalizationStatus_name = map[int32]string{
+		0: "PERSONALIZATION_STATUS_UNSPECIFIED",
+		1: "PERSONALIZATION_STATUS_APPLIED",
+		2: "PERSONALIZATION_STATUS_NOT_APPLIED",
+		3: "PERSONALIZATION_STATUS_UNAVAILABLE",
+	}
+	PersonalizationStatus_value = map[string]int32{
+		"PERSONALIZATION_STATUS_UNSPECIFIED": 0,
+		"PERSONALIZATION_STATUS_APPLIED":     1,
+		"PERSONALIZATION_STATUS_NOT_APPLIED": 2,
+		"PERSONALIZATION_STATUS_UNAVAILABLE": 3,
+	}
+)
+
+func (x PersonalizationStatus) Enum() *PersonalizationStatus {
+	p := new(PersonalizationStatus)
+	*p = x
+	return p
+}
+
+func (x PersonalizationStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PersonalizationStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_benefit_v1_benefit_proto_enumTypes[0].Descriptor()
+}
+
+func (PersonalizationStatus) Type() protoreflect.EnumType {
+	return &file_benefit_v1_benefit_proto_enumTypes[0]
+}
+
+func (x PersonalizationStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PersonalizationStatus.Descriptor instead.
+func (PersonalizationStatus) EnumDescriptor() ([]byte, []int) {
+	return file_benefit_v1_benefit_proto_rawDescGZIP(), []int{0}
+}
+
 type CalculateBenefitRequest struct {
 	state                 protoimpl.MessageState `protogen:"open.v1"`
 	UserId                string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -95,6 +147,7 @@ type CalculateBenefitResponse struct {
 	PayableKopecks        int64                  `protobuf:"varint,2,opt,name=payable_kopecks,json=payableKopecks,proto3" json:"payable_kopecks,omitempty"`
 	CashbackKopecks       int64                  `protobuf:"varint,3,opt,name=cashback_kopecks,json=cashbackKopecks,proto3" json:"cashback_kopecks,omitempty"`
 	PurchaseAmountKopecks int64                  `protobuf:"varint,4,opt,name=purchase_amount_kopecks,json=purchaseAmountKopecks,proto3" json:"purchase_amount_kopecks,omitempty"`
+	PersonalizationStatus PersonalizationStatus  `protobuf:"varint,5,opt,name=personalization_status,json=personalizationStatus,proto3,enum=benefit.v1.PersonalizationStatus" json:"personalization_status,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -155,6 +208,13 @@ func (x *CalculateBenefitResponse) GetPurchaseAmountKopecks() int64 {
 		return x.PurchaseAmountKopecks
 	}
 	return 0
+}
+
+func (x *CalculateBenefitResponse) GetPersonalizationStatus() PersonalizationStatus {
+	if x != nil {
+		return x.PersonalizationStatus
+	}
+	return PersonalizationStatus_PERSONALIZATION_STATUS_UNSPECIFIED
 }
 
 type ReserveCashbackRequest struct {
@@ -472,12 +532,13 @@ const file_benefit_v1_benefit_proto_rawDesc = "" +
 	"\ashop_id\x18\x02 \x01(\tR\x06shopId\x12\x1f\n" +
 	"\vcategory_id\x18\x03 \x01(\tR\n" +
 	"categoryId\x126\n" +
-	"\x17purchase_amount_kopecks\x18\x04 \x01(\x03R\x15purchaseAmountKopecks\"\xd1\x01\n" +
+	"\x17purchase_amount_kopecks\x18\x04 \x01(\x03R\x15purchaseAmountKopecks\"\xab\x02\n" +
 	"\x18CalculateBenefitResponse\x12)\n" +
 	"\x10discount_kopecks\x18\x01 \x01(\x03R\x0fdiscountKopecks\x12'\n" +
 	"\x0fpayable_kopecks\x18\x02 \x01(\x03R\x0epayableKopecks\x12)\n" +
 	"\x10cashback_kopecks\x18\x03 \x01(\x03R\x0fcashbackKopecks\x126\n" +
-	"\x17purchase_amount_kopecks\x18\x04 \x01(\x03R\x15purchaseAmountKopecks\"\xbe\x01\n" +
+	"\x17purchase_amount_kopecks\x18\x04 \x01(\x03R\x15purchaseAmountKopecks\x12X\n" +
+	"\x16personalization_status\x18\x05 \x01(\x0e2!.benefit.v1.PersonalizationStatusR\x15personalizationStatus\"\xbe\x01\n" +
 	"\x16ReserveCashbackRequest\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x17\n" +
@@ -495,7 +556,12 @@ const file_benefit_v1_benefit_proto_rawDesc = "" +
 	"\x15CancelCashbackRequest\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\"\x18\n" +
-	"\x16CancelCashbackResponse2\x80\x03\n" +
+	"\x16CancelCashbackResponse*\xb3\x01\n" +
+	"\x15PersonalizationStatus\x12&\n" +
+	"\"PERSONALIZATION_STATUS_UNSPECIFIED\x10\x00\x12\"\n" +
+	"\x1ePERSONALIZATION_STATUS_APPLIED\x10\x01\x12&\n" +
+	"\"PERSONALIZATION_STATUS_NOT_APPLIED\x10\x02\x12&\n" +
+	"\"PERSONALIZATION_STATUS_UNAVAILABLE\x10\x032\x80\x03\n" +
 	"\x0eBenefitService\x12]\n" +
 	"\x10CalculateBenefit\x12#.benefit.v1.CalculateBenefitRequest\x1a$.benefit.v1.CalculateBenefitResponse\x12Z\n" +
 	"\x0fReserveCashback\x12\".benefit.v1.ReserveCashbackRequest\x1a#.benefit.v1.ReserveCashbackResponse\x12Z\n" +
@@ -514,31 +580,34 @@ func file_benefit_v1_benefit_proto_rawDescGZIP() []byte {
 	return file_benefit_v1_benefit_proto_rawDescData
 }
 
+var file_benefit_v1_benefit_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_benefit_v1_benefit_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_benefit_v1_benefit_proto_goTypes = []any{
-	(*CalculateBenefitRequest)(nil),  // 0: benefit.v1.CalculateBenefitRequest
-	(*CalculateBenefitResponse)(nil), // 1: benefit.v1.CalculateBenefitResponse
-	(*ReserveCashbackRequest)(nil),   // 2: benefit.v1.ReserveCashbackRequest
-	(*ReserveCashbackResponse)(nil),  // 3: benefit.v1.ReserveCashbackResponse
-	(*ConfirmCashbackRequest)(nil),   // 4: benefit.v1.ConfirmCashbackRequest
-	(*ConfirmCashbackResponse)(nil),  // 5: benefit.v1.ConfirmCashbackResponse
-	(*CancelCashbackRequest)(nil),    // 6: benefit.v1.CancelCashbackRequest
-	(*CancelCashbackResponse)(nil),   // 7: benefit.v1.CancelCashbackResponse
+	(PersonalizationStatus)(0),       // 0: benefit.v1.PersonalizationStatus
+	(*CalculateBenefitRequest)(nil),  // 1: benefit.v1.CalculateBenefitRequest
+	(*CalculateBenefitResponse)(nil), // 2: benefit.v1.CalculateBenefitResponse
+	(*ReserveCashbackRequest)(nil),   // 3: benefit.v1.ReserveCashbackRequest
+	(*ReserveCashbackResponse)(nil),  // 4: benefit.v1.ReserveCashbackResponse
+	(*ConfirmCashbackRequest)(nil),   // 5: benefit.v1.ConfirmCashbackRequest
+	(*ConfirmCashbackResponse)(nil),  // 6: benefit.v1.ConfirmCashbackResponse
+	(*CancelCashbackRequest)(nil),    // 7: benefit.v1.CancelCashbackRequest
+	(*CancelCashbackResponse)(nil),   // 8: benefit.v1.CancelCashbackResponse
 }
 var file_benefit_v1_benefit_proto_depIdxs = []int32{
-	0, // 0: benefit.v1.BenefitService.CalculateBenefit:input_type -> benefit.v1.CalculateBenefitRequest
-	2, // 1: benefit.v1.BenefitService.ReserveCashback:input_type -> benefit.v1.ReserveCashbackRequest
-	4, // 2: benefit.v1.BenefitService.ConfirmCashback:input_type -> benefit.v1.ConfirmCashbackRequest
-	6, // 3: benefit.v1.BenefitService.CancelCashback:input_type -> benefit.v1.CancelCashbackRequest
-	1, // 4: benefit.v1.BenefitService.CalculateBenefit:output_type -> benefit.v1.CalculateBenefitResponse
-	3, // 5: benefit.v1.BenefitService.ReserveCashback:output_type -> benefit.v1.ReserveCashbackResponse
-	5, // 6: benefit.v1.BenefitService.ConfirmCashback:output_type -> benefit.v1.ConfirmCashbackResponse
-	7, // 7: benefit.v1.BenefitService.CancelCashback:output_type -> benefit.v1.CancelCashbackResponse
-	4, // [4:8] is the sub-list for method output_type
-	0, // [0:4] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: benefit.v1.CalculateBenefitResponse.personalization_status:type_name -> benefit.v1.PersonalizationStatus
+	1, // 1: benefit.v1.BenefitService.CalculateBenefit:input_type -> benefit.v1.CalculateBenefitRequest
+	3, // 2: benefit.v1.BenefitService.ReserveCashback:input_type -> benefit.v1.ReserveCashbackRequest
+	5, // 3: benefit.v1.BenefitService.ConfirmCashback:input_type -> benefit.v1.ConfirmCashbackRequest
+	7, // 4: benefit.v1.BenefitService.CancelCashback:input_type -> benefit.v1.CancelCashbackRequest
+	2, // 5: benefit.v1.BenefitService.CalculateBenefit:output_type -> benefit.v1.CalculateBenefitResponse
+	4, // 6: benefit.v1.BenefitService.ReserveCashback:output_type -> benefit.v1.ReserveCashbackResponse
+	6, // 7: benefit.v1.BenefitService.ConfirmCashback:output_type -> benefit.v1.ConfirmCashbackResponse
+	8, // 8: benefit.v1.BenefitService.CancelCashback:output_type -> benefit.v1.CancelCashbackResponse
+	5, // [5:9] is the sub-list for method output_type
+	1, // [1:5] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_benefit_v1_benefit_proto_init() }
@@ -551,13 +620,14 @@ func file_benefit_v1_benefit_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_benefit_v1_benefit_proto_rawDesc), len(file_benefit_v1_benefit_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_benefit_v1_benefit_proto_goTypes,
 		DependencyIndexes: file_benefit_v1_benefit_proto_depIdxs,
+		EnumInfos:         file_benefit_v1_benefit_proto_enumTypes,
 		MessageInfos:      file_benefit_v1_benefit_proto_msgTypes,
 	}.Build()
 	File_benefit_v1_benefit_proto = out.File

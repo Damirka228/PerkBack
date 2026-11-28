@@ -20,6 +20,9 @@ func calculateError(err error) error {
 	if errors.Is(err, context.DeadlineExceeded) {
 		return status.Error(codes.DeadlineExceeded, "request deadline exceeded")
 	}
+	if errors.Is(err, domain.ErrUserServiceUnavailable) {
+		return status.Error(codes.Unavailable, "user-service unavalible")
+	}
 	return status.Error(codes.Internal, "failed to calculate benefit")
 
 }
@@ -39,6 +42,9 @@ func reservError(err error) error {
 	}
 	if errors.Is(err, domain.ErrReservationCanceled) {
 		return status.Error(codes.FailedPrecondition, "cannot reserve cashback for a canceled order")
+	}
+	if errors.Is(err, domain.ErrUserServiceUnavailable) {
+		return status.Error(codes.Unavailable, "user-service unavalible")
 	}
 	if errors.Is(err, context.Canceled) {
 		return status.Error(codes.Canceled, "request canceled")

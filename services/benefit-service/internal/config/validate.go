@@ -21,6 +21,12 @@ func (c Config) Validate() error {
 	if c.RulesService.RequestTimeout <= 0 {
 		return fmt.Errorf("timeout rule service <= 0")
 	}
+	if c.UserService.Addr == "" {
+		return fmt.Errorf("user-service address is empty")
+	}
+	if c.UserService.RequestTimeout <= 0 {
+		return fmt.Errorf("user-service request timeout must be positive")
+	}
 	if c.Timeout <= 0 {
 		return fmt.Errorf("timeout <= 0")
 	}
@@ -46,6 +52,9 @@ func (c Config) Validate() error {
 	}
 	if c.DB.ConnectTimeout <= 0 {
 		return fmt.Errorf("database connect timeout must be positive")
+	}
+	if c.SelectedCategoryRateBPS < 0 || c.SelectedCategoryRateBPS > 10000 {
+		return fmt.Errorf("selected_category_rate_bps must be between 0 and 10000")
 	}
 	return nil
 }

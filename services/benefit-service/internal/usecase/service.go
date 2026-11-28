@@ -2,11 +2,17 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/domain"
 )
+
+type UserProvider interface {
+	GetProfile(ctx context.Context, userID string) (domain.UserProfile, error)
+}
 
 type OptionsProvider interface {
 	GetOptions(ctx context.Context, input CalculateInput) ([]BestVariant, error)
@@ -23,24 +29,52 @@ type CashbackSetter interface {
 }
 
 type Service struct {
-	optionsProvider  OptionsProvider
-	cashbackReserver CashbackReserver
-	cashabackSetter  CashbackSetter
-	timeNow          func() time.Time
+	optionsProvider         OptionsProvider
+	cashbackReserver        CashbackReserver
+	cashabackSetter         CashbackSetter
+	userProvider            UserProvider
+	selectedCategoryRateBPS int64
+	timeNow                 func() time.Time
 }
 
-func NewService(optionsProvider OptionsProvider, cashbackReserver CashbackReserver, cashbackSetter CashbackSetter) *Service {
+func NewService(optionsProvider OptionsProvider, cashbackReserver CashbackReserver, cashbackSetter CashbackSetter, userProvider UserProvider, selectedCategoryRateBPS int64) *Service {
 	return &Service{
-		optionsProvider:  optionsProvider,
-		cashbackReserver: cashbackReserver,
-		cashabackSetter:  cashbackSetter,
-		timeNow:          time.Now,
+		optionsProvider:         optionsProvider,
+		cashbackReserver:        cashbackReserver,
+		cashabackSetter:         cashbackSetter,
+		userProvider:            userProvider,
+		selectedCategoryRateBPS: selectedCategoryRateBPS,
+		timeNow:                 time.Now,
 	}
 }
 
 func (s *Service) Calculate(ctx context.Context, input CalculateInput) (domain.OptionResult, error) {
+	status := domain.PersonalizationNotApplied
+	if input.CategoryID == "" {
+		return domain.OptionResult{}, domain.ErrNotCategory
+	}
 	if input.PurchaseAmountKop < 0 {
 		return domain.OptionResult{}, domain.ErrInvalidAmount
+	}
+	if input.UserID == "" {
+		return domain.OptionResult{}, domain.ErrNotUserID
+	}
+	profile, err := s.userProvider.GetProfile(ctx, input.UserID)
+	if err := ctx.Err(); err != nil {
+		return domain.OptionResult{}, fmt.Errorf("context error: %w", err)
+	}
+	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrProfileNotFound):
+			profile = domain.UserProfile{}
+
+		case errors.Is(err, domain.ErrUserServiceUnavailable):
+			profile = domain.UserProfile{}
+			status = domain.PersonalizationUnavailable
+
+		default:
+			return domain.OptionResult{}, fmt.Errorf("get profile: %w", err)
+		}
 	}
 	variants, err := s.optionsProvider.GetOptions(ctx, input)
 	if err != nil {
@@ -55,10 +89,19 @@ func (s *Service) Calculate(ctx context.Context, input CalculateInput) (domain.O
 	var bestResult *domain.OptionResult
 	var isFirst bool = true
 
+	categorySelected := slices.Contains(profile.SelectedCategoryIDs, input.CategoryID)
+	if categorySelected {
+		status = domain.PersonalizationApplied
+	}
+
 	for _, variant := range variants {
-		res, err := domain.CalculateOptions(input.PurchaseAmountKop, variant.DiscountKop, variant.RateBPS)
+		rateBPS, err := domain.ApplyCategoryRate(variant.RateBPS, s.selectedCategoryRateBPS, categorySelected)
 		if err != nil {
-			return domain.OptionResult{}, fmt.Errorf("err get variant for best variants: %w", err)
+			return domain.OptionResult{}, fmt.Errorf("apply category rate: %w", err)
+		}
+		res, err := domain.CalculateOptions(input.PurchaseAmountKop, variant.DiscountKop, rateBPS)
+		if err != nil {
+			return domain.OptionResult{}, fmt.Errorf("calculate options: %w", err)
 		}
 		currBenefit := res.DiscountKop + res.CashbackKop
 		if isFirst {
@@ -72,6 +115,7 @@ func (s *Service) Calculate(ctx context.Context, input CalculateInput) (domain.O
 			bestResult = &res
 		}
 	}
+	bestResult.PersonalizationStatus = status
 	return *bestResult, nil
 }
 

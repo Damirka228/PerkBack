@@ -113,7 +113,7 @@ func TestReserveCashbackSuccess(t *testing.T) {
 			input.PurchaseAmountKop = tt.purchase
 			provider := &optionsProviderTest{variants: tt.variants}
 			repository := &fakeCashbackReserver{amount: tt.reserved}
-			service := usecase.NewService(provider, repository, nil)
+			service := usecase.NewService(provider, repository, nil, &userProviderTest{}, 500)
 			ctx := t.Context()
 
 			before := time.Now().UTC()
@@ -161,15 +161,16 @@ func TestReserveCashbackValidationDoesNotCallDependencies(t *testing.T) {
 			input.UserID = tt.userID
 			provider := &optionsProviderTest{variants: []usecase.BestVariant{{RateBPS: 500}}}
 			repository := &fakeCashbackReserver{amount: 5_000}
-			service := usecase.NewService(provider, repository, nil)
+			profiles := &userProviderTest{}
+			service := usecase.NewService(provider, repository, nil, profiles, 500)
 
 			amount, err := service.ReserveCashback(t.Context(), tt.orderID, input)
 			if amount != 0 || !errors.Is(err, tt.wantErr) {
 				t.Fatalf("ReserveCashback() = (%d, %v), want (0, %v)", amount, err, tt.wantErr)
 			}
-			if provider.calls != 0 || len(repository.lookupCalls) != 0 || len(repository.calls) != 0 {
-				t.Errorf("invalid input called dependencies: provider=%d, lookups=%d, reservations=%d",
-					provider.calls, len(repository.lookupCalls), len(repository.calls))
+			if profiles.calls != 0 || provider.calls != 0 || len(repository.lookupCalls) != 0 || len(repository.calls) != 0 {
+				t.Errorf("invalid input called dependencies: profiles=%d, options=%d, lookups=%d, reservations=%d",
+					profiles.calls, provider.calls, len(repository.lookupCalls), len(repository.calls))
 			}
 		})
 	}
@@ -212,7 +213,7 @@ func TestReserveCashbackCalculationErrorDoesNotCreateReservation(t *testing.T) {
 			input.PurchaseAmountKop = tt.purchase
 			provider := &optionsProviderTest{variants: tt.variants, err: tt.providerErr}
 			repository := &fakeCashbackReserver{amount: 5_000}
-			service := usecase.NewService(provider, repository, nil)
+			service := usecase.NewService(provider, repository, nil, &userProviderTest{}, 500)
 
 			ctx := t.Context()
 			amount, err := service.ReserveCashback(ctx, "order-1", input)
@@ -247,7 +248,7 @@ func TestReserveCashbackPreservesRepositoryError(t *testing.T) {
 			provider := &optionsProviderTest{variants: []usecase.BestVariant{{RateBPS: 500}}}
 			// A repository result must not be reported as success alongside an error.
 			repository := &fakeCashbackReserver{amount: 2_000, err: tt.err}
-			service := usecase.NewService(provider, repository, nil)
+			service := usecase.NewService(provider, repository, nil, &userProviderTest{}, 500)
 			ctx := t.Context()
 
 			amount, err := service.ReserveCashback(ctx, "order-1", reservationInput())
@@ -269,10 +270,14 @@ func TestReserveCashbackPreservesRepositoryError(t *testing.T) {
 func TestCalculateDoesNotReserveCashback(t *testing.T) {
 	provider := &optionsProviderTest{variants: []usecase.BestVariant{{RateBPS: 500}}}
 	repository := &fakeCashbackReserver{amount: 2_000}
-	service := usecase.NewService(provider, repository, nil)
+	service := usecase.NewService(provider, repository, nil, &userProviderTest{}, 500)
 
 	got, err := service.Calculate(t.Context(), reservationInput())
-	want := domain.OptionResult{PayableKop: 100_000, CashbackKop: 5_000}
+	want := domain.OptionResult{
+		PayableKop:            100_000,
+		CashbackKop:           5_000,
+		PersonalizationStatus: domain.PersonalizationNotApplied,
+	}
 	if err != nil || got != want {
 		t.Fatalf("Calculate() = (%+v, %v), want (%+v, nil)", got, err, want)
 	}

@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/client/rules"
+	"github.com/Damirka228/PerkBack/services/benefit-service/internal/client/user"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/config"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/consumer/kafka"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/domain"
@@ -85,6 +86,15 @@ func run(ctx context.Context, configPath string) error {
 			log.WithError(err).Error("close rules client")
 		}
 	}()
+	clientUser, err := user.NewClient(cfg.UserService)
+	if err != nil {
+		return fmt.Errorf("create user client %w", err)
+	}
+	defer func() {
+		if err := clientUser.Close(); err != nil {
+			log.WithError(err).Error("close user client")
+		}
+	}()
 	rulesPromotions, err := client.GetAllPromotionsClient(signalCtx)
 	if err != nil {
 		return fmt.Errorf("err to get promotions without rules client: %w", err)
@@ -108,7 +118,7 @@ func run(ctx context.Context, configPath string) error {
 		}
 	}()
 
-	service := usecase.NewService(provider, repo, repo)
+	service := usecase.NewService(provider, repo, repo, clientUser, cfg.SelectedCategoryRateBPS)
 	gRPCBenefitHandler := benefit.NewHandler(service, service, service)
 	gRPCServer := server.NewGRPCServer(
 		cfg.GRPC.Addr,
