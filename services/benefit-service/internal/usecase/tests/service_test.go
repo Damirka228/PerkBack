@@ -25,6 +25,17 @@ func (p *optionsProviderTest) GetOptions(ctx context.Context, input usecase.Calc
 	return p.variants, p.err
 }
 
+type userProviderTest struct {
+	calls      int
+	categories []string
+	err        error
+}
+
+func (p *userProviderTest) GetProfile(_ context.Context, userID string) (domain.UserProfile, error) {
+	p.calls++
+	return domain.UserProfile{UserID: userID, SelectedCategoryIDs: p.categories}, p.err
+}
+
 func TestCalculateSuccess(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -128,7 +139,7 @@ func TestCalculateSuccess(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			provider := &optionsProviderTest{variants: tc.variants}
-			service := usecase.NewService(provider, nil, nil)
+			service := usecase.NewService(provider, nil, nil, &userProviderTest{}, 500)
 
 			ctx := t.Context()
 			input := usecase.CalculateInput{
@@ -142,7 +153,9 @@ func TestCalculateSuccess(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Calculate error = %v", err)
 			}
-			assert.Equal(t, result, tc.want)
+			want := tc.want
+			want.PersonalizationStatus = domain.PersonalizationNotApplied
+			assert.Equal(t, result, want)
 			if provider.calls != 1 {
 				t.Fatalf("GetOptions calls = %d, want 1", provider.calls)
 			}
@@ -229,9 +242,11 @@ func TestCalculateErrors(t *testing.T) {
 				variants: tc.variants,
 				err:      tc.providerErr,
 			}
-			service := usecase.NewService(provider, nil, nil)
+			service := usecase.NewService(provider, nil, nil, &userProviderTest{}, 500)
 
 			result, err := service.Calculate(t.Context(), usecase.CalculateInput{
+				UserID:            "user-1",
+				CategoryID:        "groceries",
 				PurchaseAmountKop: tc.amount,
 			})
 
@@ -248,6 +263,20 @@ func TestCalculateErrors(t *testing.T) {
 	}
 }
 
+func TestCalculateEmptyCategorySkipsProviders(t *testing.T) {
+	options := &optionsProviderTest{}
+	profiles := &userProviderTest{}
+	service := usecase.NewService(options, nil, nil, profiles, 500)
+
+	_, err := service.Calculate(t.Context(), usecase.CalculateInput{UserID: "user-1", PurchaseAmountKop: 100_000})
+	if !errors.Is(err, domain.ErrNotCategory) {
+		t.Fatalf("Calculate error = %v, want %v", err, domain.ErrNotCategory)
+	}
+	if profiles.calls != 0 || options.calls != 0 {
+		t.Fatalf("invalid category called providers: profiles=%d, options=%d", profiles.calls, options.calls)
+	}
+}
+
 func TestCalculateEmptyOptions(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -260,9 +289,11 @@ func TestCalculateEmptyOptions(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			provider := &optionsProviderTest{variants: tc.variants}
-			service := usecase.NewService(provider, nil, nil)
+			service := usecase.NewService(provider, nil, nil, &userProviderTest{}, 500)
 
 			result, err := service.Calculate(t.Context(), usecase.CalculateInput{
+				UserID:            "user-1",
+				CategoryID:        "groceries",
 				PurchaseAmountKop: 100_000,
 			})
 

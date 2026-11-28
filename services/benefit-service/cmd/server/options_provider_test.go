@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"slices"
@@ -10,6 +11,12 @@ import (
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/domain"
 	"github.com/Damirka228/PerkBack/services/benefit-service/internal/usecase"
 )
+
+type userProviderTest struct{}
+
+func (userProviderTest) GetProfile(_ context.Context, userID string) (domain.UserProfile, error) {
+	return domain.UserProfile{UserID: userID}, nil
+}
 
 func TestOptionsProviderGetOptions(t *testing.T) {
 	promotion := domain.RulePromotion{
@@ -125,7 +132,7 @@ func TestCalculateWithMatchingRule(t *testing.T) {
 			},
 		},
 	}
-	service := usecase.NewService(provider, nil, nil)
+	service := usecase.NewService(provider, nil, nil, userProviderTest{}, 500)
 	input := usecase.CalculateInput{
 		UserID:            "user-1",
 		ShopID:            "shop-42",
@@ -138,9 +145,10 @@ func TestCalculateWithMatchingRule(t *testing.T) {
 		t.Fatalf("Calculate error = %v", err)
 	}
 	want := domain.OptionResult{
-		DiscountKop: 7_000,
-		PayableKop:  93_000,
-		CashbackKop: 2_790,
+		DiscountKop:           7_000,
+		PayableKop:            93_000,
+		CashbackKop:           2_790,
+		PersonalizationStatus: domain.PersonalizationNotApplied,
 	}
 	if got != want {
 		t.Errorf("Calculate = %+v, want %+v", got, want)

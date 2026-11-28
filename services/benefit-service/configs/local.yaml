@@ -20,8 +20,14 @@ rules-service:
   address: "127.0.0.1:9091"
   request_timeout: 3s
 
+user-service:
+  address: "127.0.0.1:9094"
+  request_timeout: 3s
+
 database:
   connect_timeout: 5s
+
+selected_category_rate_bps: 500
 
 timeout: 10s
 shutdown_timeout: 10s

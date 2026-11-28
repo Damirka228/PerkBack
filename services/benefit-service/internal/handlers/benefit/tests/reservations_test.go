@@ -65,6 +65,17 @@ func TestReserveCashbackErrors(t *testing.T) {
 	}
 }
 
+func TestReserveCashbackMapsUserServiceUnavailable(t *testing.T) {
+	handler := benefit.NewHandler(nil, reserverFunc(func(context.Context, string, usecase.CalculateInput) (int64, error) {
+		return 0, fmt.Errorf("reserve cashback: %w", domain.ErrUserServiceUnavailable)
+	}), nil)
+
+	got, err := handler.ReserveCashback(t.Context(), &benefitv1.ReserveCashbackRequest{})
+	if got != nil || status.Code(err) != codes.Unavailable {
+		t.Fatalf("ReserveCashback() = (%v, %v), want nil response and Unavailable", got, err)
+	}
+}
+
 func TestReserveCashbackMapsRequestAndActualAmount(t *testing.T) {
 	for _, amount := range []int64{0, 2_000} {
 		t.Run(fmt.Sprintf("amount_%d", amount), func(t *testing.T) {

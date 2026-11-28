@@ -48,11 +48,25 @@ func (h *Handler) CalculateBenefit(ctx context.Context, req *benefitv1.Calculate
 	if err != nil {
 		return nil, calculateError(err)
 	}
+
+	var personalizationStatus benefitv1.PersonalizationStatus
+	switch result.PersonalizationStatus {
+	case domain.PersonalizationApplied:
+		personalizationStatus = benefitv1.PersonalizationStatus_PERSONALIZATION_STATUS_APPLIED
+	case domain.PersonalizationNotApplied:
+		personalizationStatus = benefitv1.PersonalizationStatus_PERSONALIZATION_STATUS_NOT_APPLIED
+	case domain.PersonalizationUnavailable:
+		personalizationStatus = benefitv1.PersonalizationStatus_PERSONALIZATION_STATUS_UNAVAILABLE
+	default:
+		personalizationStatus = benefitv1.PersonalizationStatus_PERSONALIZATION_STATUS_UNSPECIFIED
+	}
+
 	return &benefitv1.CalculateBenefitResponse{
 		PurchaseAmountKopecks: input.PurchaseAmountKop,
 		DiscountKopecks:       result.DiscountKop,
 		PayableKopecks:        result.PayableKop,
 		CashbackKopecks:       result.CashbackKop,
+		PersonalizationStatus: personalizationStatus,
 	}, nil
 }
 

@@ -11,6 +11,13 @@ service BenefitService {
   rpc CancelCashback(CancelCashbackRequest) returns (CancelCashbackResponse);
 }
 
+enum PersonalizationStatus {
+  PERSONALIZATION_STATUS_UNSPECIFIED = 0;
+  PERSONALIZATION_STATUS_APPLIED = 1;
+  PERSONALIZATION_STATUS_NOT_APPLIED = 2;
+  PERSONALIZATION_STATUS_UNAVAILABLE = 3;
+}
+
 message CalculateBenefitRequest {
   string user_id = 1;
   string shop_id = 2;
@@ -23,6 +30,7 @@ message CalculateBenefitResponse {
   int64 payable_kopecks = 2;
   int64 cashback_kopecks = 3;
   int64 purchase_amount_kopecks = 4;
+  PersonalizationStatus personalization_status = 5;
 }
 
 message ReserveCashbackRequest {
